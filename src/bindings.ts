@@ -153,7 +153,7 @@ class NestedBinding<T> extends GeneralNestedBinding<T, T> {
 }
 
 class BufferBinding<T> extends NestedBinding<T> {
-  @observable buffer: BindingValue<T> | undefined
+  @observable buffer: BindingValue<T>
 
   // Laziness is critical so that binding construction doesn't subscribe.
   hadInitialPeek = false
@@ -164,6 +164,8 @@ class BufferBinding<T> extends NestedBinding<T> {
     private isDeferring: boolean
   ) {
     super(context, nested)
+
+    this.buffer = { value: (undefined as any) as T }
   }
 
   push(value: BindingValue<T>) {
@@ -175,10 +177,10 @@ class BufferBinding<T> extends NestedBinding<T> {
       this.buffer = super.peek()
       this.hadInitialPeek = true
     }
-    return this.buffer!
+    return this.buffer
   }
   onBlur() {
-    if (this.isDeferring) super.push(this.buffer!)
+    if (this.isDeferring) super.push(this.buffer)
 
     super.onBlur()
     this.buffer = super.peek()
@@ -201,6 +203,8 @@ class ValidationBinding<T> extends NestedBinding<T> {
     private validator: (value: T) => ValidationResult
   ) {
     super(context, nested)
+
+    this.buffer = { value: (undefined as any) as T }
   }
 
   validate() {
@@ -232,6 +236,8 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
     private converter: Converter<T, S>
   ) {
     super(context, nested)
+
+    this.buffer = { value: (undefined as any) as T }
   }
 
   push(value: BindingValue<T>) {

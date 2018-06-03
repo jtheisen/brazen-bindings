@@ -1,7 +1,7 @@
 import * as React from "react"
 import { observer } from "mobx-react"
 import * as classnames from "classnames"
-import { Binding, BindingProvider, BindingValue } from "./bindings"
+import { Binding, BindingProvider } from "./bindings"
 import * as pt from "@blueprintjs/core"
 
 interface IBoundInputProps<T> {
@@ -45,7 +45,7 @@ export class BoundInput extends React.Component<IBoundInputProps<string>> {
     console.info("bound input renders")
 
     const binding: Binding<string> = this.props.binding.getBinding()
-    const haveError = !!binding.peek().value
+    const haveError = !!binding.peek().error
     const result = (
       <div
         className={classnames({
