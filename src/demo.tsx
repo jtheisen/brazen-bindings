@@ -1,21 +1,21 @@
-import { BindingContext } from "./bindings";
-import * as React from "react";
-import { observer } from "mobx-react";
-import { defineBinding, Workbench } from "./demo-components";
+import { BindingContext } from "./bindings"
+import * as React from "react"
+import { observer } from "mobx-react"
+import { defineBinding, Workbench } from "./demo-components"
 
-const context = new BindingContext();
+const context = new BindingContext()
 
-const NumberWorkbench = Workbench.ofType<number>();
-const StringWorkbench = Workbench.ofType<string>();
+const NumberWorkbench = Workbench.ofType<number>()
+const StringWorkbench = Workbench.ofType<string>()
 
 function nonEmpty(value: string) {
-  return value ? undefined : "value should not be empty";
+  return value ? undefined : "value should not be empty"
 }
 
 @observer
 class ValidationDisplay extends React.Component<{ context: BindingContext }> {
   render() {
-    const isValid = this.props.context.isValid;
+    const isValid = this.props.context.isValid
     return isValid ? (
       <div className="pt-callout pt-intent-success pt-icon-tick">
         All is well.
@@ -24,7 +24,7 @@ class ValidationDisplay extends React.Component<{ context: BindingContext }> {
       <div className="pt-callout pt-intent-warning pt-icon-warning-sign">
         There are some issues.
       </div>
-    );
+    )
   }
 }
 
@@ -42,6 +42,7 @@ export class Demo extends React.Component {
             validate
           </button>
         </div>
+
         <StringWorkbench
           title="Immediate"
           context={context}
@@ -83,6 +84,6 @@ export class Demo extends React.Component {
           )}
         />
       </div>
-    );
+    )
   }
 }

@@ -1,36 +1,36 @@
-import * as React from "react";
-import { observer } from "mobx-react";
-import * as classnames from "classnames";
-import { Binding, BindingProvider } from "./bindings";
-import * as pt from "@blueprintjs/core";
+import * as React from "react"
+import { observer } from "mobx-react"
+import * as classnames from "classnames"
+import { Binding, BindingProvider } from "./bindings"
+import * as pt from "@blueprintjs/core"
 
 interface IBoundInputProps<T> {
-  label?: string;
-  binding: BindingProvider<T>;
-  reset?: () => void;
+  label?: string
+  binding: BindingProvider<T>
+  reset?: () => void
 }
 
 class BindingOpener<T> extends React.Component<{ binding: Binding<T> }> {
   componentDidMount() {
-    console.info("opening");
-    this.props.binding.open();
+    console.info("opening")
+    this.props.binding.open()
   }
 
   componentWillReceiveProps(props: { binding: Binding<T> }) {
     if (this.props.binding !== props.binding) {
-      console.info("switching");
-      this.props.binding.close();
-      props.binding.open();
+      console.info("switching")
+      this.props.binding.close()
+      props.binding.open()
     }
   }
 
   componentWillUnmount() {
-    console.info("closing");
-    this.props.binding.close();
+    console.info("closing")
+    this.props.binding.close()
   }
 
   render() {
-    return null;
+    return null
   }
 }
 
@@ -38,14 +38,14 @@ class BindingOpener<T> extends React.Component<{ binding: Binding<T> }> {
 @pt.HotkeysTarget
 export class BoundInput extends React.Component<IBoundInputProps<string>> {
   constructor(props: IBoundInputProps<string>) {
-    super(props);
+    super(props)
   }
 
   render() {
-    console.info("bound input renders");
+    console.info("bound input renders")
 
-    const binding = this.props.binding.getBinding();
-    const haveError = !!binding.getError();
+    const binding = this.props.binding.getBinding()
+    const haveError = !!binding.getError()
     const result = (
       <div
         className={classnames({
@@ -83,23 +83,25 @@ export class BoundInput extends React.Component<IBoundInputProps<string>> {
           <strong>{binding.getError()}</strong>
         </div>
       </div>
-    );
+    )
 
-    console.info("bound input finished rendering");
+    console.info("bound input finished rendering")
 
-    return result;
+    return result
   }
 
   renderHotkeys() {
     return (
       <pt.Hotkeys>
-        {this.props.reset && <pt.Hotkey
-          label="reset"
-          combo="alt + r"
-          allowInInput={true}
-          onKeyDown={() => this.props.reset!()}
-        />}
+        {this.props.reset && (
+          <pt.Hotkey
+            label="reset"
+            combo="alt + r"
+            allowInInput={true}
+            onKeyDown={() => this.props.reset!()}
+          />
+        )}
       </pt.Hotkeys>
-    );
+    )
   }
 }
