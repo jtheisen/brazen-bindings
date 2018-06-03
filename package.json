@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "bindings",
   "version": "0.1.0",
   "private": true,
   "main": "src/index.tsx",
@@ -27,5 +27,7 @@
     "@types/react-dom": "16.0.4",
     "@types/react-transition-group": "2.0.11",
     "typescript": "^2.7.2"
-  }
+  },
+  "keywords": [],
+  "description": ""
 }
