@@ -373,51 +373,7 @@ export class BindingBuilder<T> extends BindingProvider<T> {
     return new BindingBuilder(new ResetOnFocusBinding(this.binding))
   }
 
-  behavior(behaviors: Behaviors) {
-    let source = new BindingBuilder(this.binding)
-
-    source = source.buffer()
-
-    // if validate
-
-    return source
-  }
-
   apply<T2>(f: (binding: Binding<T>) => Binding<T2>) {
     return new BindingBuilder(f(this.binding))
   }
-}
-
-// for validation
-export enum ValidationBehavior {
-  FlagOnBlur,
-  FlagOnBlurAndResetOnFocus,
-  FlagWhileFocusedAndResetOnBlur,
-  FlagWhileFocusedAndKeepOnBlur
-}
-
-// for validation or extra param on push
-// plus separate binding
-export enum InvalidInputUpdateBehavior {
-  PassThroughIfPossible,
-  IgnoreAlways
-}
-
-// last buffer or separate binding
-export enum InvalidSourceBehavior {
-  FlagAlso,
-  DontFlag
-}
-
-// potential extra buffer
-export enum UpdateBehavior {
-  WhileFocused,
-  OnBlur
-}
-
-export interface Behaviors {
-  ValidationBehavior: ValidationBehavior
-  invalidInputUpdateBehavior: InvalidInputUpdateBehavior
-  invalidSourceBehavior: InvalidSourceBehavior
-  updateBehavior: UpdateBehavior
 }

@@ -5,6 +5,7 @@
   "main": "src/index.tsx",
   "dependencies": {
     "@blueprintjs/core": "2.2.1",
+    "@blueprintjs/icons": "2.2.1",
     "classnames": "2.2.5",
     "mobx": "4.2.1",
     "mobx-react": "5.1.2",
