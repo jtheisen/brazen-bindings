@@ -2,13 +2,19 @@ import { observable, reaction, computed } from "mobx"
 
 type ValidationResult = string | undefined
 
-interface ConvertionResult<T> {
-  error?: ValidationResult
-  value?: T
+export interface BindingValue<T> {
+  value: T
+  error?: string
+}
+
+export interface IBinding {
+  validate(): void
+
+  peek(): BindingValue<any>
 }
 
 abstract class Converter<S, T> {
-  abstract convert(value: S): ConvertionResult<T>
+  abstract convert(value: S): BindingValue<T>
   abstract convertBack(value: T): S
 }
 
@@ -17,7 +23,7 @@ export class BindingContext {
 
   @computed
   get isValid() {
-    return this.bindings.every(b => !b.getError())
+    return this.bindings.every(b => !b.peek().error)
   }
 
   validateAll() {
@@ -51,7 +57,7 @@ class FloatConverter extends Converter<string, number> {
   convert(value: string) {
     const result = Number(value)
     if (Number.isNaN(result)) {
-      return { error: "Not a number." }
+      return { value: 0, error: "Not a number." }
     } else {
       return { value: result }
     }
@@ -64,20 +70,14 @@ class FloatConverter extends Converter<string, number> {
 
 export const floatConverter = new FloatConverter()
 
-export interface IBinding {
-  validate(): void
-
-  getError(): string | undefined
-}
-
 export abstract class Binding<T> extends BindingProvider<T>
   implements IBinding {
   constructor(public context: BindingContext) {
     super()
   }
 
-  abstract push(value: T): void
-  abstract peek(): T
+  abstract push(value: BindingValue<T>): void
+  abstract peek(): BindingValue<T>
 
   open() {
     this.context.register(this)
@@ -88,10 +88,6 @@ export abstract class Binding<T> extends BindingProvider<T>
   }
 
   validate() {}
-
-  getError(): string | undefined {
-    return undefined
-  }
 
   onFocus() {}
   onBlur() {}
@@ -106,12 +102,12 @@ class PropertyBinding<M, P extends keyof M> extends Binding<M[P]> {
     super(context)
   }
 
-  push(value: M[P]) {
-    this.model[this.prop] = value
+  push(value: BindingValue<M[P]>) {
+    this.model[this.prop] = value.value
   }
 
   peek() {
-    return this.model[this.prop]
+    return { value: this.model[this.prop] }
   }
 }
 
@@ -126,15 +122,11 @@ abstract class GeneralNestedBinding<S, T> extends Binding<T> {
     this.nested.validate()
   }
 
-  nestedPush(value: S) {
+  nestedPush(value: BindingValue<S>) {
     this.nested.push(value)
   }
   nestedPeek() {
     return this.nested.peek()
-  }
-
-  getError() {
-    return this.nested.getError()
   }
 
   onFocus() {
@@ -144,7 +136,7 @@ abstract class GeneralNestedBinding<S, T> extends Binding<T> {
     this.nested.onBlur()
   }
 
-  protected update(value: S) {}
+  protected update(value: BindingValue<S>) {}
 }
 
 class NestedBinding<T> extends GeneralNestedBinding<T, T> {
@@ -152,7 +144,7 @@ class NestedBinding<T> extends GeneralNestedBinding<T, T> {
     super(context, nested)
   }
 
-  push(value: T) {
+  push(value: BindingValue<T>) {
     super.nestedPush(value)
   }
   peek() {
@@ -161,7 +153,7 @@ class NestedBinding<T> extends GeneralNestedBinding<T, T> {
 }
 
 class BufferBinding<T> extends NestedBinding<T> {
-  @observable buffer?: T
+  @observable buffer: BindingValue<T> | undefined
 
   // Laziness is critical so that binding construction doesn't subscribe.
   hadInitialPeek = false
@@ -174,7 +166,7 @@ class BufferBinding<T> extends NestedBinding<T> {
     super(context, nested)
   }
 
-  push(value: T) {
+  push(value: BindingValue<T>) {
     this.buffer = value
     if (!this.isDeferring) super.push(value)
   }
@@ -195,13 +187,13 @@ class BufferBinding<T> extends NestedBinding<T> {
     super.push(this.buffer)
   }
 
-  protected update(value: T) {
+  protected update(value: BindingValue<T>) {
     this.buffer = value
   }
 }
 
 class ValidationBinding<T> extends NestedBinding<T> {
-  @observable error: ValidationResult
+  @observable buffer: BindingValue<T>
 
   constructor(
     context: BindingContext,
@@ -212,27 +204,27 @@ class ValidationBinding<T> extends NestedBinding<T> {
   }
 
   validate() {
-    this.error = this.validator(this.peek())
+    this.buffer = super.peek()
+    this.buffer.error = this.validator(this.buffer.value)
   }
 
-  getError() {
-    return this.error || super.getError()
+  peek() {
+    return this.buffer
   }
 
-  push(value: T) {
+  push(value: BindingValue<T>) {
     this.update(value)
-    if (!this.error) {
-      super.push(value)
-    }
+    super.push(this.buffer)
   }
 
-  protected update(value: T) {
-    this.error = this.validator(value)
+  protected update(value: BindingValue<T>) {
+    const error = this.validator(value.value)
+    this.buffer = { error, value: value.value }
   }
 }
 
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
-  @observable error: ValidationResult
+  @observable buffer: BindingValue<T>
 
   constructor(
     context: BindingContext,
@@ -242,24 +234,19 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
     super(context, nested)
   }
 
-  push(value: T) {
-    const result = this.converter.convert(value)
-    this.error = result.error
-    if (!this.error) {
-      super.nestedPush(result.value!)
-    }
+  push(value: BindingValue<T>) {
+    const result = this.converter.convert(value.value)
+    this.buffer = { value: value.value, error: result.error }
+    super.nestedPush(result)
   }
 
-  peek(): T {
-    return this.converter.convertBack(super.nestedPeek())
+  peek() {
+    return this.buffer
   }
 
-  getError() {
-    return this.error || super.getError()
-  }
-
-  protected update(value: S) {
-    this.error = undefined
+  protected update(value: BindingValue<S>) {
+    const newValue = this.converter.convertBack(value.value)
+    this.buffer = { value: newValue, error: value.error }
   }
 }
 
@@ -274,15 +261,51 @@ class ThrottleBinding<T> extends NestedBinding<T> {
     super(context, nested)
   }
 
-  push(value: T) {
+  push(value: BindingValue<T>) {
     const key = (this.currentKey = {})
     setTimeout(() => {
       if (this.currentKey === key) super.push(value)
     }, this.millis)
   }
 
-  protected update(value: T) {
+  protected update(value: BindingValue<T>) {
     this.currentKey = {}
+  }
+}
+
+class ValidationOnBlurBinding<T> extends NestedBinding<T> {
+  constructor(nested: Binding<T>) {
+    super(nested.context, nested)
+  }
+
+  onBlur() {
+    this.validate()
+  }
+}
+
+class ResetOnFocusBinding<T> extends NestedBinding<T> {
+  constructor(nested: Binding<T>) {
+    super(nested.context, nested)
+  }
+
+  onFocus() {
+    this.push(this.peek())
+  }
+}
+
+class InitialValidationBinding<T> extends NestedBinding<T> {
+  private hadOnce = false
+
+  constructor(nested: Binding<T>) {
+    super(nested.context, nested)
+  }
+
+  peek() {
+    if (!this.hadOnce) {
+      this.validate()
+      this.hadOnce = true
+    }
+    return super.peek()
   }
 }
 
@@ -332,7 +355,63 @@ export class BindingBuilder<T> extends BindingProvider<T> {
     )
   }
 
+  validateInitially() {
+    return new BindingBuilder(new InitialValidationBinding(this.binding))
+  }
+
+  validateOnBlur() {
+    return new BindingBuilder(new ValidationOnBlurBinding(this.binding))
+  }
+
+  resetOnFocus() {
+    return new BindingBuilder(new ResetOnFocusBinding(this.binding))
+  }
+
+  behavior(behaviors: Behaviors) {
+    let source = new BindingBuilder(this.binding)
+
+    source = source.buffer()
+
+    // if validate
+
+    return source
+  }
+
   apply<T2>(f: (binding: Binding<T>) => Binding<T2>) {
     return new BindingBuilder(f(this.binding))
   }
+}
+
+// for validation
+export enum ValidationBehavior {
+  FlagOnBlur,
+  FlagOnBlurAndResetOnFocus,
+  FlagWhileFocusedAndResetOnBlur,
+  FlagWhileFocusedAndKeepOnBlur
+}
+
+// for validation or extra param on push
+// plus separate binding
+export enum InvalidInputUpdateBehavior {
+  PassThroughIfPossible,
+  IgnoreAlways
+}
+
+// last buffer or separate binding
+export enum InvalidSourceBehavior {
+  FlagAlso,
+  DontFlag
+}
+
+// potential extra buffer
+export enum UpdateBehavior {
+  WhileFocused,
+  OnBlur
+}
+
+export interface Behaviors {
+  ValidationBehavior: ValidationBehavior
+  invalidInputUpdateBehavior: InvalidInputUpdateBehavior
+  invalidSourceBehavior: InvalidSourceBehavior
+  updateBehavior: UpdateBehavior
 }

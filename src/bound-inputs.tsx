@@ -1,7 +1,7 @@
 import * as React from "react"
 import { observer } from "mobx-react"
 import * as classnames from "classnames"
-import { Binding, BindingProvider } from "./bindings"
+import { Binding, BindingProvider, BindingValue } from "./bindings"
 import * as pt from "@blueprintjs/core"
 
 interface IBoundInputProps<T> {
@@ -44,8 +44,8 @@ export class BoundInput extends React.Component<IBoundInputProps<string>> {
   render() {
     console.info("bound input renders")
 
-    const binding = this.props.binding.getBinding()
-    const haveError = !!binding.getError()
+    const binding: Binding<string> = this.props.binding.getBinding()
+    const haveError = !!binding.peek().value
     const result = (
       <div
         className={classnames({
@@ -65,8 +65,8 @@ export class BoundInput extends React.Component<IBoundInputProps<string>> {
         >
           <input
             className="pt-input"
-            value={binding.peek()}
-            onChange={e => binding.push(e.currentTarget.value)}
+            value={binding.peek().value}
+            onChange={e => binding.push({ value: e.currentTarget.value })}
             onFocus={() => binding.onFocus()}
             onBlur={() => binding.onBlur()}
           />
@@ -80,7 +80,7 @@ export class BoundInput extends React.Component<IBoundInputProps<string>> {
           )}
         </div>
         <div className="pt-form-helper-text">
-          <strong>{binding.getError()}</strong>
+          <strong>{binding.peek().error}</strong>
         </div>
       </div>
     )
