@@ -112,8 +112,8 @@ class PropertyBinding<M, P extends keyof M> extends Binding<M[P]> {
 }
 
 abstract class GeneralNestedBinding<S, T> extends Binding<T> {
-  constructor(context: BindingContext, private nested: Binding<S>) {
-    super(context)
+  constructor(private nested: Binding<S>) {
+    super(nested.context)
 
     reaction(() => this.nested.peek(), v => this.update(v))
   }
@@ -140,8 +140,8 @@ abstract class GeneralNestedBinding<S, T> extends Binding<T> {
 }
 
 class NestedBinding<T> extends GeneralNestedBinding<T, T> {
-  constructor(context: BindingContext, nested: Binding<T>) {
-    super(context, nested)
+  constructor(nested: Binding<T>) {
+    super(nested)
   }
 
   push(value: BindingValue<T>) {
@@ -158,12 +158,8 @@ class BufferBinding<T> extends NestedBinding<T> {
   // Laziness is critical so that binding construction doesn't subscribe.
   hadInitialPeek = false
 
-  constructor(
-    context: BindingContext,
-    nested: Binding<T>,
-    private isDeferring: boolean
-  ) {
-    super(context, nested)
+  constructor(nested: Binding<T>, private isDeferring: boolean) {
+    super(nested)
 
     this.buffer = { value: (undefined as any) as T }
   }
@@ -198,11 +194,10 @@ class ValidationBinding<T> extends NestedBinding<T> {
   @observable buffer: BindingValue<T>
 
   constructor(
-    context: BindingContext,
     nested: Binding<T>,
     private validator: (value: T) => ValidationResult
   ) {
-    super(context, nested)
+    super(nested)
 
     this.buffer = { value: (undefined as any) as T }
   }
@@ -230,12 +225,8 @@ class ValidationBinding<T> extends NestedBinding<T> {
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   @observable buffer: BindingValue<T>
 
-  constructor(
-    context: BindingContext,
-    nested: Binding<S>,
-    private converter: Converter<T, S>
-  ) {
-    super(context, nested)
+  constructor(nested: Binding<S>, private converter: Converter<T, S>) {
+    super(nested)
 
     this.buffer = { value: (undefined as any) as T }
   }
@@ -260,12 +251,8 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
 class ThrottleBinding<T> extends NestedBinding<T> {
   currentKey = {}
 
-  constructor(
-    context: BindingContext,
-    nested: Binding<T>,
-    private millis: number
-  ) {
-    super(context, nested)
+  constructor(nested: Binding<T>, private millis: number) {
+    super(nested)
   }
 
   push(value: BindingValue<T>) {
@@ -282,7 +269,7 @@ class ThrottleBinding<T> extends NestedBinding<T> {
 
 class ValidationOnBlurBinding<T> extends NestedBinding<T> {
   constructor(nested: Binding<T>) {
-    super(nested.context, nested)
+    super(nested)
   }
 
   onBlur() {
@@ -292,7 +279,7 @@ class ValidationOnBlurBinding<T> extends NestedBinding<T> {
 
 class ResetOnFocusBinding<T> extends NestedBinding<T> {
   constructor(nested: Binding<T>) {
-    super(nested.context, nested)
+    super(nested)
   }
 
   onFocus() {
@@ -304,7 +291,7 @@ class InitialValidationBinding<T> extends NestedBinding<T> {
   private hadOnce = false
 
   constructor(nested: Binding<T>) {
-    super(nested.context, nested)
+    super(nested)
   }
 
   peek() {
@@ -326,40 +313,32 @@ export class BindingBuilder<T> extends BindingProvider<T> {
   }
 
   buffer() {
-    return new BindingBuilder<T>(
-      new BufferBinding(this.binding.context, this.binding, false)
-    )
+    return new BindingBuilder<T>(new BufferBinding(this.binding, false))
   }
 
   defer() {
-    return new BindingBuilder<T>(
-      new BufferBinding(this.binding.context, this.binding, true)
-    )
+    return new BindingBuilder<T>(new BufferBinding(this.binding, true))
   }
 
   convert<T2>(converter: Converter<T2, T>) {
     return new BindingBuilder<T2>(
-      new ConversionBinding(this.binding.context, this.binding, converter)
+      new ConversionBinding(this.binding, converter)
     )
   }
 
   fromNumber() {
     const binding = (this.binding as any) as Binding<number>
     return new BindingBuilder<string>(
-      new ConversionBinding(this.binding.context, binding, new FloatConverter())
+      new ConversionBinding(binding, new FloatConverter())
     )
   }
 
   validate(validate: (value: T) => ValidationResult) {
-    return new BindingBuilder(
-      new ValidationBinding(this.binding.context, this.binding, validate)
-    )
+    return new BindingBuilder(new ValidationBinding(this.binding, validate))
   }
 
   throttle(millis: number) {
-    return new BindingBuilder(
-      new ThrottleBinding(this.binding.context, this.binding, millis)
-    )
+    return new BindingBuilder(new ThrottleBinding(this.binding, millis))
   }
 
   validateInitially() {
