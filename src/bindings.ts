@@ -223,7 +223,7 @@ class ValidationBinding<T> extends NestedBinding<T> {
 
   protected update(value: BindingValue<T>) {
     const error = this.validator(value.value)
-    this.buffer = { error, value: value.value }
+    this.buffer = { error: error || value.error, value: value.value }
   }
 }
 
@@ -242,6 +242,7 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
 
   push(value: BindingValue<T>) {
     const result = this.converter.convert(value.value)
+    result.error = value.error || result.error
     this.buffer = { value: value.value, error: result.error }
     super.nestedPush(result)
   }

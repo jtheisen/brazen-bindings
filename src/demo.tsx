@@ -44,16 +44,6 @@ export class Demo extends React.Component {
         </div>
 
         <StringWorkbench
-          title="Immediate"
-          context={context}
-          definition={defineBinding("", source => source)}
-        />
-        <StringWorkbench
-          title="Deferred"
-          context={context}
-          definition={defineBinding("", source => source.defer())}
-        />
-        <StringWorkbench
           title="Nonempty immediate"
           context={context}
           definition={defineBinding("", source => source.validate(nonEmpty))}
