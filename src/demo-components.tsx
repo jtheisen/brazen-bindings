@@ -4,9 +4,8 @@ import { observer } from "mobx-react"
 import { BoundInput } from "./bound-inputs"
 import { BindingBuilder, BindingContext } from "./bindings"
 
-interface IWorkbenchProps<T> {
+export interface IWorkbenchProps<T> {
   context: BindingContext
-  title: string
   definition: IBindingDefinitionWithDefault<T>
 }
 
@@ -45,7 +44,6 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
 
     const result = (
       <div>
-        <h2 style={{ textAlign: "right" }}>{this.props.title}</h2>
         <BoundInput
           label="Editor"
           binding={this.makeBinding()}

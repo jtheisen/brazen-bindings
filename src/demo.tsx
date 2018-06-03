@@ -2,6 +2,7 @@ import { BindingContext } from "./bindings"
 import * as React from "react"
 import { observer } from "mobx-react"
 import { defineBinding, Workbench } from "./demo-components"
+import * as pt from "@blueprintjs/core"
 
 const context = new BindingContext()
 
@@ -9,7 +10,7 @@ const NumberWorkbench = Workbench.ofType<number>()
 const StringWorkbench = Workbench.ofType<string>()
 
 function nonEmpty(value: string) {
-  return value ? undefined : "value should not be empty"
+  return value.trim() ? undefined : "value should not be empty"
 }
 
 @observer
@@ -43,36 +44,64 @@ export class Demo extends React.Component {
           </button>
         </div>
 
-        <StringWorkbench
-          title="Nonempty immediate"
-          context={context}
-          definition={defineBinding("", source => source.validate(nonEmpty))}
-        />
-        <StringWorkbench
-          title="Nonempty deferred"
-          context={context}
-          definition={defineBinding("", source =>
-            source.validate(nonEmpty).defer()
-          )}
-        />
-        {/* <StringWorkbench title="No empty strings"
-                default={""}
-                makeBinding={source => source
-                    .validate(s => s ? undefined : "Field can't be empty.")
-                    .buffer()}
-            /> */}
-
-        <NumberWorkbench
-          title="Example 1"
-          context={context}
-          definition={defineBinding(42, source =>
-            source
-              .fromNumber()
-              .validate(
-                v => (v.length === 2 ? "not 2 chars please" : undefined)
-              )
-          )}
-        />
+        <pt.Tabs
+          id="SampleTabs"
+          vertical={true}
+          renderActiveTabPanelOnly={true}
+        >
+          <pt.Tab
+            id="immediate"
+            children="immediate"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("", source =>
+                  source.validate(nonEmpty)
+                )}
+              />
+            }
+          />
+          <pt.Tab
+            id="deferred"
+            children="deferred"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("", source =>
+                  source.validate(nonEmpty).defer()
+                )}
+              />
+            }
+          />
+          <pt.Tab
+            id="initially-invalid"
+            children="initially invalid"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("", source =>
+                  source.validate(nonEmpty).validateInitially()
+                )}
+              />
+            }
+          />
+          <pt.Tab
+            id="numbers"
+            children="numbers"
+            panel={
+              <NumberWorkbench
+                context={context}
+                definition={defineBinding(42, source =>
+                  source
+                    .fromNumber()
+                    .validate(
+                      v => (v.length === 2 ? "not 2 chars please" : undefined)
+                    )
+                )}
+              />
+            }
+          />
+        </pt.Tabs>
       </div>
     )
   }
