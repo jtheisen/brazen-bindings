@@ -70,8 +70,8 @@ export interface IBinding {
   getError(): string | undefined;
 }
 
-export abstract class Binding<T> extends BindingProvider<T>
-  implements IBinding {
+export abstract class Binding<T> extends BindingProvider<T> implements IBinding {
+
   constructor(public context: BindingContext) {
     super();
   }
@@ -232,6 +232,9 @@ class ValidationBinding<T> extends NestedBinding<T> {
 }
 
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
+
+  @observable error: ValidationResult;
+
   constructor(
     context: BindingContext,
     nested: Binding<S>,
@@ -239,8 +242,6 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   ) {
     super(context, nested);
   }
-
-  @observable error: ValidationResult;
 
   push(value: T) {
     const result = this.converter.convert(value);
@@ -264,6 +265,9 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
 }
 
 class ThrottleBinding<T> extends NestedBinding<T> {
+
+  currentKey = {};
+
   constructor(
     context: BindingContext,
     nested: Binding<T>,
@@ -272,13 +276,12 @@ class ThrottleBinding<T> extends NestedBinding<T> {
     super(context, nested);
   }
 
-  currentKey = {};
-
   push(value: T) {
     const key = (this.currentKey = {});
     setTimeout(() => {
       if (this.currentKey === key) super.push(value);
-    }, this.millis);
+    },
+    this.millis);
   }
 
   protected update(value: T) {

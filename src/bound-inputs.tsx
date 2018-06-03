@@ -93,12 +93,12 @@ export class BoundInput extends React.Component<IBoundInputProps<string>> {
   renderHotkeys() {
     return (
       <pt.Hotkeys>
-        <pt.Hotkey
+        {this.props.reset && <pt.Hotkey
           label="reset"
           combo="alt + r"
           allowInInput={true}
-          onKeyDown={() => this.props.reset()}
-        />
+          onKeyDown={() => this.props.reset!()}
+        />}
       </pt.Hotkeys>
     );
   }

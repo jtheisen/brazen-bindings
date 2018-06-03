@@ -56,7 +56,7 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
           <Indirection
             get={() => (
               <input
-                disabled
+                disabled={true}
                 className="pt-input"
                 value={this.value + ""}
                 style={{ width: "100%" }}

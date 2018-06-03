@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "outDir": "build/dist",
     "module": "esnext",
     "target": "es5",
@@ -14,6 +15,7 @@
     "noImplicitThis": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
+    "experimentalDecorators": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true
   },
