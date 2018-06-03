@@ -2,6 +2,7 @@ import * as React from "react";
 import { observer } from "mobx-react";
 import * as classnames from "classnames";
 import { Binding, BindingProvider } from "./bindings";
+import * as pt from "@blueprintjs/core";
 
 interface IBoundInputProps<T> {
   label?: string;
@@ -34,6 +35,7 @@ class BindingOpener<T> extends React.Component<{ binding: Binding<T> }> {
 }
 
 @observer
+@pt.HotkeysTarget
 export class BoundInput extends React.Component<IBoundInputProps<string>> {
   constructor(props: IBoundInputProps<string>) {
     super(props);
@@ -86,5 +88,18 @@ export class BoundInput extends React.Component<IBoundInputProps<string>> {
     console.info("bound input finished rendering");
 
     return result;
+  }
+
+  renderHotkeys() {
+    return (
+      <pt.Hotkeys>
+        <pt.Hotkey
+          label="reset"
+          combo="alt + r"
+          allowInInput={true}
+          onKeyDown={() => this.props.reset()}
+        />
+      </pt.Hotkeys>
+    );
   }
 }
