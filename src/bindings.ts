@@ -8,8 +8,7 @@ export interface BindingValue<T> {
 }
 
 export interface IBinding {
-  validate(): void
-
+  push(value: BindingValue<any>): void
   peek(): BindingValue<any>
 }
 
@@ -28,7 +27,7 @@ export class BindingContext {
 
   validateAll() {
     for (const binding of this.bindings) {
-      binding.validate()
+      binding.push(binding.peek())
     }
   }
 
@@ -79,6 +78,10 @@ export abstract class Binding<T> extends BindingProvider<T>
   abstract push(value: BindingValue<T>): void
   abstract peek(): BindingValue<T>
 
+  onFocus() {}
+
+  onBlur() {}
+
   open() {
     this.context.register(this)
   }
@@ -87,12 +90,9 @@ export abstract class Binding<T> extends BindingProvider<T>
     this.context.unregister(this)
   }
 
-  validate() {
+  protected validate() {
     this.push(this.peek())
   }
-
-  onFocus() {}
-  onBlur() {}
 
   getBinding() {
     return this
