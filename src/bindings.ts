@@ -1,4 +1,5 @@
 import { observable, reaction, computed } from "mobx"
+import { Converter } from "./conversions"
 
 type ValidationResult = string | undefined
 
@@ -13,11 +14,6 @@ export interface IBinding {
 
   onFocus(): void
   onBlur(): void
-}
-
-abstract class Converter<S, T> {
-  abstract convert(value: S): BindingValue<T>
-  abstract convertBack(value: T): S
 }
 
 export class BindingContext {
@@ -55,24 +51,6 @@ export class BindingContext {
 export abstract class BindingProvider<T> {
   abstract getBinding(): Binding<T>
 }
-
-class FloatConverter extends Converter<string, number> {
-  convert(value: string) {
-    if (!value.trim()) return { value: 0, error: "Not a number." }
-    const result = Number(value)
-    if (Number.isNaN(result)) {
-      return { value: 0, error: "Not a number." }
-    } else {
-      return { value: result }
-    }
-  }
-
-  convertBack(value: number) {
-    return value.toString()
-  }
-}
-
-export const floatConverter = new FloatConverter()
 
 export abstract class Binding<T> extends BindingProvider<T>
   implements IBinding {
@@ -249,7 +227,6 @@ class ValidationBinding<T> extends BufferBinding<T> {
   }
 
   push(value: BindingValue<T>) {
-    console.info("validation push")
     this.update(value)
     super.push(super.peek())
   }
@@ -373,13 +350,6 @@ export class BindingBuilder<T> extends BindingProvider<T> {
   convert<T2>(converter: Converter<T2, T>) {
     return new BindingBuilder<T2>(
       new ConversionBinding(this.binding, converter)
-    )
-  }
-
-  fromNumber() {
-    const binding = (this.binding as any) as Binding<number>
-    return new BindingBuilder<string>(
-      new ConversionBinding(binding, new FloatConverter())
     )
   }
 

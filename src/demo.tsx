@@ -1,7 +1,8 @@
 import { BindingContext } from "./bindings"
+import { floatConverter } from "./conversions"
 import * as React from "react"
 import { observer } from "mobx-react"
-import { defineBinding, Workbench } from "./demo-components"
+import { defineBinding, Workbench, DependencyDemo } from "./demo-components"
 import * as pt from "@blueprintjs/core"
 
 const context = new BindingContext()
@@ -117,13 +118,18 @@ export class Demo extends React.Component {
                 context={context}
                 definition={defineBinding(42, source =>
                   source
-                    .fromNumber()
+                    .convert(floatConverter)
                     .validate(
                       v => (v.length === 2 ? "not 2 chars please" : undefined)
                     )
                 )}
               />
             }
+          />
+          <pt.Tab
+            id="dependencies"
+            children="dependencies"
+            panel={<DependencyDemo context={context} />}
           />
         </pt.Tabs>
       </div>

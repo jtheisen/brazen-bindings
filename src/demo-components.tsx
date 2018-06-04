@@ -19,6 +19,36 @@ export interface IWorkbenchProps<T> {
 }
 
 @observer
+export class DependencyDemo extends React.Component<{
+  context: BindingContext
+}> {
+  @observable value1 = ""
+  @observable value2 = ""
+
+  render() {
+    return (
+      <div>
+        <BoundInput
+          label="Value 1"
+          binding={this.props.context.bind(this, "value1")}
+        />
+        <BoundInput
+          label="Value 1"
+          binding={this.props.context
+            .bind(this, "value2")
+            .validate(
+              v =>
+                v.length > this.value1.length
+                  ? "value 2 must not be longer than value 1"
+                  : undefined
+            )}
+        />
+      </div>
+    )
+  }
+}
+
+@observer
 export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
   @observable value: T
 
