@@ -22,24 +22,11 @@ export interface IWorkbenchProps<T> {
 export class DependencyDemo extends React.Component<{
   context: BindingContext
 }> {
-  inRender = false
-
-  @observable value1b = ""
-
-  get value1(): string {
-    if (this.inRender) throw Error()
-    return this.value1b
-  }
-  set value1(value) {
-    this.value1b = value
-  }
-  //@observable value1 = ""
+  @observable value1 = ""
   @observable value2 = ""
 
   render() {
-    this.inRender = true
-
-    const result = (
+    return (
       <div>
         <BoundInput
           label="Value 1"
@@ -59,10 +46,6 @@ export class DependencyDemo extends React.Component<{
         <Indirection get={() => <div>{this.value2}</div>} />
       </div>
     )
-
-    this.inRender = false
-
-    return result
   }
 }
 
