@@ -74,6 +74,18 @@ export class Demo extends React.Component {
             }
           />
           <pt.Tab
+            id="hybrid"
+            children="hybrid"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("", source =>
+                  source.defer().validate(nonEmpty)
+                )}
+              />
+            }
+          />
+          <pt.Tab
             id="initially-invalid"
             children="initially invalid"
             panel={

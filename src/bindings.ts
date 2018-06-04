@@ -159,7 +159,7 @@ class BufferBinding<T> extends NestedBinding<T> {
   // Laziness is critical so that binding construction doesn't subscribe.
   hadInitialPeek = false
 
-  constructor(nested: Binding<T>, private isDeferring: boolean) {
+  constructor(nested: Binding<T>) {
     super(nested)
 
     this.buffer = { value: (undefined as any) as T }
@@ -167,7 +167,7 @@ class BufferBinding<T> extends NestedBinding<T> {
 
   push(value: BindingValue<T>) {
     this.update(value)
-    if (!this.isDeferring) super.push(value)
+    super.push(value)
   }
 
   peek() {
@@ -178,17 +178,22 @@ class BufferBinding<T> extends NestedBinding<T> {
     return this.buffer
   }
 
-  onBlur() {
-    if (this.isDeferring) super.push(this.buffer)
-
-    super.onBlur()
-
-    // to notify upstream validators
-    super.push(this.buffer)
-  }
-
   protected update(value: BindingValue<T>) {
     this.buffer = value
+  }
+}
+
+class DeferringBinding<T> extends BufferBinding<T> {
+  constructor(nested: Binding<T>) {
+    super(nested)
+  }
+
+  push(value: BindingValue<T>) {
+    this.update(value)
+  }
+
+  onBlur() {
+    super.push(this.peek())
   }
 }
 
@@ -197,7 +202,7 @@ class ValidationBinding<T> extends BufferBinding<T> {
     nested: Binding<T>,
     private validator: (value: T) => ValidationResult
   ) {
-    super(nested, false)
+    super(nested)
 
     super.update({ value: (undefined as any) as T })
   }
@@ -317,11 +322,11 @@ export class BindingBuilder<T> extends BindingProvider<T> {
   }
 
   buffer() {
-    return new BindingBuilder<T>(new BufferBinding(this.binding, false))
+    return new BindingBuilder<T>(new BufferBinding(this.binding))
   }
 
   defer() {
-    return new BindingBuilder<T>(new BufferBinding(this.binding, true))
+    return new BindingBuilder<T>(new DeferringBinding(this.binding))
   }
 
   convert<T2>(converter: Converter<T2, T>) {
