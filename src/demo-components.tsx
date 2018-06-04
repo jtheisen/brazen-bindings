@@ -1,5 +1,5 @@
 import * as React from "react"
-import { observable, spy } from "mobx"
+import { observable } from "mobx"
 import { observer } from "mobx-react"
 import { BoundInput } from "./bound-inputs"
 import { BindingBuilder, BindingContext } from "./bindings"
@@ -11,11 +11,6 @@ class Indirection extends React.Component<{
   render(): JSX.Element | null | false {
     return this.props.get()
   }
-}
-
-export interface IWorkbenchProps<T> {
-  context: BindingContext
-  definition: IBindingDefinitionWithDefault<T>
 }
 
 //@observer
@@ -55,6 +50,11 @@ export class DependencyDemo extends React.Component<{
 
     return result
   }
+}
+
+export interface IWorkbenchProps<T> {
+  context: BindingContext
+  definition: IBindingDefinitionWithDefault<T>
 }
 
 @observer

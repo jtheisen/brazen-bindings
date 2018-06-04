@@ -149,6 +149,16 @@ class BarBinding<T> extends NestedBinding<T> {
   }
 }
 
+class FixBinding<T> extends NestedBinding<T> {
+  constructor(nested: Binding<T>, private fix: (value: T) => T) {
+    super(nested)
+  }
+
+  push(value: BindingValue<T>) {
+    super.push({ value: this.fix(value.value), error: value.error })
+  }
+}
+
 class WeakBranchBinding<T> extends NestedBinding<T> {
   constructor(nested: Binding<T>, private weakNested: Binding<T>) {
     super(nested)
@@ -354,6 +364,10 @@ export class BindingBuilder<T> extends BindingProvider<T> {
 
   bar() {
     return new BindingBuilder(new BarBinding(this.binding))
+  }
+
+  fix(fix: (value: T) => T) {
+    return new BindingBuilder(new FixBinding(this.binding, fix))
   }
 
   validate(validate: (value: T) => ValidationResult) {

@@ -1,6 +1,7 @@
 import { BindingContext } from "./bindings"
 import { floatConverter } from "./conversions"
 import * as React from "react"
+import { observable } from "mobx"
 import { observer } from "mobx-react"
 import { defineBinding, Workbench, DependencyDemo } from "./demo-components"
 import * as pt from "@blueprintjs/core"
@@ -32,23 +33,38 @@ class ValidationDisplay extends React.Component<{ context: BindingContext }> {
 
 @observer
 export class Demo extends React.Component {
+  @observable renderActiveTabPanelOnly = true
+
   public render() {
     return (
-      <div style={{ marginTop: 50 }}>
+      <div style={{ marginTop: 20 }}>
         <ValidationDisplay context={context} />
-        <div>
-          <button
-            className="pt-button pt-minimal"
-            onClick={() => context.validateAll()}
-          >
+        <div />
+        <div
+          style={{
+            display: "flex",
+            margin: "10px 0 10px 0",
+            paddingBottom: 5,
+            alignItems: "baseline",
+            borderBottom: "1px solid gray"
+          }}
+        >
+          <pt.Checkbox
+            label="Render active tab only"
+            checked={this.renderActiveTabPanelOnly}
+            onChange={e =>
+              (this.renderActiveTabPanelOnly = e.currentTarget.checked)
+            }
+          />
+          <div style={{ flexGrow: 5 }} />
+          <button className="pt-button" onClick={() => context.validateAll()}>
             validate
           </button>
         </div>
-
         <pt.Tabs
           id="SampleTabs"
           vertical={true}
-          renderActiveTabPanelOnly={true}
+          renderActiveTabPanelOnly={this.renderActiveTabPanelOnly}
         >
           <pt.Tab
             id="immediate"
@@ -130,6 +146,18 @@ export class Demo extends React.Component {
             id="dependencies"
             children="dependencies"
             panel={<DependencyDemo context={context} />}
+          />
+          <pt.Tab
+            id="fix"
+            children="fixed"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("", source =>
+                  source.fix(s => s.toUpperCase())
+                )}
+              />
+            }
           />
         </pt.Tabs>
       </div>
