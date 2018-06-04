@@ -63,6 +63,18 @@ export class Demo extends React.Component {
             }
           />
           <pt.Tab
+            id="bar"
+            children="barred"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("", source =>
+                  source.bar().validate(nonEmpty)
+                )}
+              />
+            }
+          />
+          <pt.Tab
             id="deferred"
             children="deferred"
             panel={
@@ -82,18 +94,6 @@ export class Demo extends React.Component {
                 context={context}
                 definition={defineBinding("", source =>
                   source.defer().validate(nonEmpty)
-                )}
-              />
-            }
-          />
-          <pt.Tab
-            id="weak"
-            children="weak"
-            panel={
-              <StringWorkbench
-                context={context}
-                definition={defineBinding("", source =>
-                  source.branchWeakly(binding => binding.validate(nonEmpty))
                 )}
               />
             }

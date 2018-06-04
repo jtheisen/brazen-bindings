@@ -100,9 +100,7 @@ class PropertyBinding<M, P extends keyof M> extends Binding<M[P]> {
   }
 
   push(value: BindingValue<M[P]>) {
-    if (!value.error) {
-      this.model[this.prop] = value.value
-    }
+    this.model[this.prop] = value.value
   }
 
   peek() {
@@ -135,15 +133,19 @@ abstract class GeneralNestedBinding<S, T> extends Binding<T> {
 }
 
 class NestedBinding<T> extends GeneralNestedBinding<T, T> {
-  constructor(nested: Binding<T>) {
-    super(nested)
-  }
-
   push(value: BindingValue<T>) {
     super.nestedPush(value)
   }
   peek() {
     return super.nestedPeek()
+  }
+}
+
+class BarBinding<T> extends NestedBinding<T> {
+  push(value: BindingValue<T>) {
+    if (!value.error) {
+      super.push(value)
+    }
   }
 }
 
@@ -198,10 +200,6 @@ class BufferBinding<T> extends NestedBinding<T> {
 }
 
 class DeferringBinding<T> extends BufferBinding<T> {
-  constructor(nested: Binding<T>) {
-    super(nested)
-  }
-
   push(value: BindingValue<T>) {
     this.update(value)
   }
@@ -242,7 +240,7 @@ class ValidationBinding<T> extends BufferBinding<T> {
   // doesn't yet help us, is should factor our nestedPeek and update
   private getValidated(value: BindingValue<T>) {
     const error = this.validator(value.value)
-    return { error: error || value.error, value: value.value })
+    return { error: error || value.error, value: value.value }
   }
 }
 
@@ -300,10 +298,6 @@ class ThrottleBinding<T> extends NestedBinding<T> {
 
 // unused, behavior currently present anyhow
 class ValidationOnBlurBinding<T> extends NestedBinding<T> {
-  constructor(nested: Binding<T>) {
-    super(nested)
-  }
-
   onBlur() {
     this.validate()
   }
@@ -311,10 +305,6 @@ class ValidationOnBlurBinding<T> extends NestedBinding<T> {
 
 // not sensible this way and currently unused
 class ResetOnFocusBinding<T> extends NestedBinding<T> {
-  constructor(nested: Binding<T>) {
-    super(nested)
-  }
-
   onFocus() {
     this.push(this.peek())
   }
@@ -360,6 +350,10 @@ export class BindingBuilder<T> extends BindingProvider<T> {
     return new BindingBuilder<T2>(
       new ConversionBinding(this.binding, converter)
     )
+  }
+
+  bar() {
+    return new BindingBuilder(new BarBinding(this.binding))
   }
 
   validate(validate: (value: T) => ValidationResult) {
