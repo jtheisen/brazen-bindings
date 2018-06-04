@@ -4,3 +4,22 @@ body {
 .pt-tab-panel {
   flex-grow: 1;
 }
+
+.workbench {
+  display: flex;
+  flex-grow: 1;
+}
+
+.workbench > *:nth-child(1) {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.workbench > *:nth-child(2) {
+  margin: 0 20px;
+  flex-shrink: 0;
+}
+
+.workbench > *:nth-child(3) {
+  flex-grow: 1;
+}

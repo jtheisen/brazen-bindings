@@ -75,8 +75,8 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
     console.info("workbench renders")
 
     const result = (
-      <div style={{ display: "flex", flexGrow: "1" }}>
-        <div style={{ width: 150, flexShrink: 0 }}>
+      <div className="workbench">
+        <div>
           <BoundInput
             label="Editor"
             binding={this.makeBinding()}
@@ -96,12 +96,12 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
             />
           </label>
         </div>
-        <div style={{ margin: "0 20px", flexShrink: 0 }}>
+        <div>
           <pre>
             <code>{this.props.code}</code>
           </pre>
         </div>
-        <div style={{ flexGrow: 1 }}>
+        <div>
           <blockquote>{this.props.description}</blockquote>
         </div>
       </div>
