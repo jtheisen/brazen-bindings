@@ -122,10 +122,6 @@ abstract class GeneralNestedBinding<S, T> extends Binding<T> {
     reaction(() => this.nested.peek(), v => this.update(v))
   }
 
-  validate() {
-    this.nested.validate()
-  }
-
   nestedPush(value: BindingValue<S>) {
     this.nested.push(value)
   }
@@ -206,6 +202,7 @@ class ValidationBinding<T> extends BufferBinding<T> {
   }
 
   push(value: BindingValue<T>) {
+    console.info("validation push")
     this.update(value)
     super.push(super.peek())
   }
