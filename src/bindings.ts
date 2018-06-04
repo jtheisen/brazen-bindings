@@ -216,7 +216,7 @@ class ValidationBinding<T> extends BufferBinding<T> {
 }
 
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
-  @observable buffer: BindingValue<T>
+  @observable private buffer: BindingValue<T>
 
   // Laziness is critical so that binding construction doesn't subscribe.
   hadInitialPeek = false
