@@ -103,7 +103,9 @@ class PropertyBinding<M, P extends keyof M> extends Binding<M[P]> {
   }
 
   push(value: BindingValue<M[P]>) {
-    this.model[this.prop] = value.value
+    if (!value.error) {
+      this.model[this.prop] = value.value
+    }
   }
 
   peek() {
@@ -181,7 +183,6 @@ class BufferBinding<T> extends NestedBinding<T> {
     if (this.isDeferring) super.push(this.buffer)
 
     super.onBlur()
-    this.buffer = super.peek()
 
     // to notify upstream validators
     super.push(this.buffer)
@@ -202,6 +203,11 @@ class ValidationBinding<T> extends BufferBinding<T> {
     super.update({ value: (undefined as any) as T })
   }
 
+  push(value: BindingValue<T>) {
+    this.update(value)
+    super.push(super.peek())
+  }
+
   validate() {
     const value = super.peek()
     const error = this.validator(value.value)
@@ -209,7 +215,6 @@ class ValidationBinding<T> extends BufferBinding<T> {
   }
 
   protected update(value: BindingValue<T>) {
-    super.update(value)
     const error = this.validator(value.value)
     super.update({ error: error || value.error, value: value.value })
   }
