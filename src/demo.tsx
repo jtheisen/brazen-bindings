@@ -91,7 +91,13 @@ export class Demo extends React.Component {
             panel={
               <NumberWorkbench
                 context={context}
-                definition={defineBinding(42, source => source.fromNumber())}
+                definition={defineBinding(42, source =>
+                  source
+                    .fromNumber()
+                    .validate(
+                      v => (v.length === 2 ? "not 2 chars please" : undefined)
+                    )
+                )}
               />
             }
           />

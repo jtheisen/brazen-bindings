@@ -266,6 +266,7 @@ class ThrottleBinding<T> extends NestedBinding<T> {
   }
 }
 
+// unused, behavior currently present anyhow
 class ValidationOnBlurBinding<T> extends NestedBinding<T> {
   constructor(nested: Binding<T>) {
     super(nested)
@@ -276,6 +277,7 @@ class ValidationOnBlurBinding<T> extends NestedBinding<T> {
   }
 }
 
+// not sensible this way and currently unused
 class ResetOnFocusBinding<T> extends NestedBinding<T> {
   constructor(nested: Binding<T>) {
     super(nested)
