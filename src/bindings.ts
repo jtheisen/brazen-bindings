@@ -107,7 +107,6 @@ class PropertyBinding<M, P extends keyof M> extends Binding<M[P]> {
   }
 
   peek() {
-    console.info("peeking " + this.model[this.prop])
     return { value: this.model[this.prop] }
   }
 }
@@ -172,8 +171,8 @@ class BufferBinding<T> extends NestedBinding<T> {
 
   peek() {
     if (!this.hadInitialPeek) {
-      this.buffer = super.peek()
       this.hadInitialPeek = true
+      this.buffer = super.peek()
     }
     return this.buffer
   }
@@ -215,9 +214,11 @@ class ValidationBinding<T> extends BufferBinding<T> {
   }
 }
 
-// FIXME: the value can still be null here
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   @observable buffer: BindingValue<T>
+
+  // Laziness is critical so that binding construction doesn't subscribe.
+  hadInitialPeek = false
 
   constructor(nested: Binding<S>, private converter: Converter<T, S>) {
     super(nested)
@@ -233,6 +234,10 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   }
 
   peek() {
+    if (!this.hadInitialPeek) {
+      this.hadInitialPeek = true
+      this.update(super.nestedPeek())
+    }
     return this.buffer
   }
 
