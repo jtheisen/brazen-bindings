@@ -47,7 +47,7 @@ export class Demo extends React.Component {
         <pt.Tabs
           id="SampleTabs"
           vertical={true}
-          renderActiveTabPanelOnly={false}
+          renderActiveTabPanelOnly={true}
         >
           <pt.Tab
             id="immediate"

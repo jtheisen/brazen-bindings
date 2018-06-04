@@ -153,7 +153,7 @@ class NestedBinding<T> extends GeneralNestedBinding<T, T> {
 }
 
 class BufferBinding<T> extends NestedBinding<T> {
-  @observable buffer: BindingValue<T>
+  @observable private buffer: BindingValue<T>
 
   // Laziness is critical so that binding construction doesn't subscribe.
   hadInitialPeek = false
@@ -199,18 +199,19 @@ class ValidationBinding<T> extends BufferBinding<T> {
   ) {
     super(nested, false)
 
-    this.buffer = { value: (undefined as any) as T }
+    super.update({ value: (undefined as any) as T })
   }
 
   validate() {
-    this.buffer = super.peek()
-    this.buffer.error = this.validator(this.buffer.value)
+    const value = super.peek()
+    const error = this.validator(value.value)
+    super.update({ value: value.value, error: error })
   }
 
   protected update(value: BindingValue<T>) {
     super.update(value)
     const error = this.validator(value.value)
-    this.buffer = { error: error || value.error, value: value.value }
+    super.update({ error: error || value.error, value: value.value })
   }
 }
 
