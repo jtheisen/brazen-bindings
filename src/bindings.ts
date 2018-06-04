@@ -173,7 +173,6 @@ class BufferBinding<T> extends NestedBinding<T> {
   peek() {
     if (!this.hadInitialPeek) {
       this.buffer = super.peek()
-      console.info("initial peek: " + this.buffer.value)
       this.hadInitialPeek = true
     }
     return this.buffer
@@ -291,10 +290,13 @@ class InitialValidationBinding<T> extends NestedBinding<T> {
 
   peek() {
     if (!this.hadOnce) {
-      this.validate()
       this.hadOnce = true
+      const source = super.peek()
+      this.push(source)
+      return source
+    } else {
+      return super.peek()
     }
-    return super.peek()
   }
 }
 
