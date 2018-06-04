@@ -8,10 +8,4 @@ import "@blueprintjs/icons/lib/css/blueprint-icons.css"
 
 FocusStyleManager.onlyShowFocusOnTabs()
 
-const App = () => (
-  <div>
-    <Demo />
-  </div>
-)
-
-render(<App />, document.getElementById("root"))
+render(<Demo />, document.getElementById("root"))
