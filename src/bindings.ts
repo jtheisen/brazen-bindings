@@ -54,6 +54,7 @@ export abstract class BindingProvider<T> {
 
 class FloatConverter extends Converter<string, number> {
   convert(value: string) {
+    if (!value.trim()) return { value: 0, error: "Not a number." }
     const result = Number(value)
     if (Number.isNaN(result)) {
       return { value: 0, error: "Not a number." }
