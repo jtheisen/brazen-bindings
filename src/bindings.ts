@@ -232,21 +232,18 @@ class ValidationBinding<T> extends BufferBinding<T> {
   }
 
   nestedPeek() {
-    const value = super.nestedPeek()
-    const error = this.validator(value.value)
-    return { error: error || value.error, value: value.value }
+    return this.getValidated(super.nestedPeek())
   }
 
   protected update(value: BindingValue<T>) {
-    const error = this.validator(value.value)
-    super.update({ error: error || value.error, value: value.value })
+    super.update(this.getValidated(value))
   }
 
-  // doesn't yet help us
-  // private getValidated(value: BindingValue<T>) {
-  //   const error = this.validator(value.value)
-  //   return { error: error || value.error, value: value.value })
-  // }
+  // doesn't yet help us, is should factor our nestedPeek and update
+  private getValidated(value: BindingValue<T>) {
+    const error = this.validator(value.value)
+    return { error: error || value.error, value: value.value })
+  }
 }
 
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
