@@ -4,11 +4,6 @@ import { observer } from "mobx-react"
 import { BoundInput } from "./bound-inputs"
 import { BindingBuilder, BindingContext } from "./bindings"
 
-export interface IWorkbenchProps<T> {
-  context: BindingContext
-  definition: IBindingDefinitionWithDefault<T>
-}
-
 @observer
 class Indirection extends React.Component<{
   get: () => JSX.Element | null | false
@@ -16,6 +11,11 @@ class Indirection extends React.Component<{
   render(): JSX.Element | null | false {
     return this.props.get()
   }
+}
+
+export interface IWorkbenchProps<T> {
+  context: BindingContext
+  definition: IBindingDefinitionWithDefault<T>
 }
 
 @observer

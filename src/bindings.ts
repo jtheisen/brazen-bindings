@@ -107,6 +107,7 @@ class PropertyBinding<M, P extends keyof M> extends Binding<M[P]> {
   }
 
   peek() {
+    console.info("peeking " + this.model[this.prop])
     return { value: this.model[this.prop] }
   }
 }
@@ -165,16 +166,19 @@ class BufferBinding<T> extends NestedBinding<T> {
   }
 
   push(value: BindingValue<T>) {
-    this.buffer = value
+    this.update(value)
     if (!this.isDeferring) super.push(value)
   }
+
   peek() {
     if (!this.hadInitialPeek) {
       this.buffer = super.peek()
+      console.info("initial peek: " + this.buffer.value)
       this.hadInitialPeek = true
     }
     return this.buffer
   }
+
   onBlur() {
     if (this.isDeferring) super.push(this.buffer)
 
@@ -190,14 +194,12 @@ class BufferBinding<T> extends NestedBinding<T> {
   }
 }
 
-class ValidationBinding<T> extends NestedBinding<T> {
-  @observable buffer: BindingValue<T>
-
+class ValidationBinding<T> extends BufferBinding<T> {
   constructor(
     nested: Binding<T>,
     private validator: (value: T) => ValidationResult
   ) {
-    super(nested)
+    super(nested, false)
 
     this.buffer = { value: (undefined as any) as T }
   }
@@ -207,21 +209,14 @@ class ValidationBinding<T> extends NestedBinding<T> {
     this.buffer.error = this.validator(this.buffer.value)
   }
 
-  peek() {
-    return this.buffer
-  }
-
-  push(value: BindingValue<T>) {
-    this.update(value)
-    super.push(this.buffer)
-  }
-
   protected update(value: BindingValue<T>) {
+    super.update(value)
     const error = this.validator(value.value)
     this.buffer = { error: error || value.error, value: value.value }
   }
 }
 
+// FIXME: the value can still be null here
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   @observable buffer: BindingValue<T>
 
