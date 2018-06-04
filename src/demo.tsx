@@ -75,6 +75,14 @@ export class Demo extends React.Component {
                 definition={defineBinding("", source =>
                   source.validate(nonEmpty)
                 )}
+                description={
+                  <div>
+                    The most simple case of validation. Everything is done
+                    immediately.
+                  </div>
+                }
+                code={`bind(model, "value")
+  .validate(nonEmpty)`}
               />
             }
           />
@@ -87,6 +95,15 @@ export class Demo extends React.Component {
                 definition={defineBinding("", source =>
                   source.bar().validate(nonEmpty)
                 )}
+                description={
+                  <div>
+                    A <code>bar()</code> <em>before</em> validation prevents
+                    invalid values to be written to the upstream source.
+                  </div>
+                }
+                code={`bind(model, "value")
+  .bar()
+  .validate(nonEmpty)`}
               />
             }
           />
@@ -99,6 +116,15 @@ export class Demo extends React.Component {
                 definition={defineBinding("", source =>
                   source.validate(nonEmpty).defer()
                 )}
+                description={
+                  <div>
+                    A <code>defer()</code> <em>after</em> causes validation to
+                    happen on focus loss.
+                  </div>
+                }
+                code={`bind(model, "value")
+  .validate(nonEmpty)
+  .defer()`}
               />
             }
           />
@@ -111,6 +137,16 @@ export class Demo extends React.Component {
                 definition={defineBinding("", source =>
                   source.defer().validate(nonEmpty)
                 )}
+                description={
+                  <div>
+                    If we swap the order of the last sample, the validation
+                    happens immediately again, but the upstream write is still
+                    deferred until focus loss.
+                  </div>
+                }
+                code={`bind(model, "value")
+  .defer()
+  .validate(nonEmpty)`}
               />
             }
           />
@@ -123,6 +159,17 @@ export class Demo extends React.Component {
                 definition={defineBinding("", source =>
                   source.validate(nonEmpty).validateInitially()
                 )}
+                description={
+                  <div>
+                    Ususally we dont want to validate the source without any
+                    prior user interaction, especially in the common case of
+                    validating against empty strings. But in some cases, it is
+                    desired.
+                  </div>
+                }
+                code={`bind(model, "value")
+  .validate(nonEmpty)
+  .validateInitially()`}
               />
             }
           />
@@ -133,12 +180,18 @@ export class Demo extends React.Component {
               <NumberWorkbench
                 context={context}
                 definition={defineBinding(42, source =>
-                  source
-                    .convert(floatConverter)
-                    .validate(
-                      v => (v.length === 2 ? "not 2 chars please" : undefined)
-                    )
+                  source.convert(floatConverter)
                 )}
+                description={
+                  <div>
+                    Conversion of data types, usually involving parsing, can
+                    fail is thus a special validation case. Unlike validation
+                    with <code>validate()</code>, a failed conversion can never
+                    update the upstream source.
+                  </div>
+                }
+                code={`bind(model, "value")
+  .convert(floatConverter)`}
               />
             }
           />
@@ -156,6 +209,15 @@ export class Demo extends React.Component {
                 definition={defineBinding("", source =>
                   source.fix(s => s.toUpperCase())
                 )}
+                description={
+                  <div>
+                    Using a framework like this should not make us lose the
+                    ability for quick on-the-fly fixes. Throw in a{" "}
+                    <code>defer()</code> to make it happen only on focus loss.
+                  </div>
+                }
+                code={`bind(model, "value")
+  .fix(s => s.toUpperCase())`}
               />
             }
           />

@@ -13,19 +13,14 @@ class Indirection extends React.Component<{
   }
 }
 
-//@observer
 export class DependencyDemo extends React.Component<{
   context: BindingContext
 }> {
-  inRender = false
-
   @observable value1 = ""
   @observable value2 = ""
 
   render() {
-    this.inRender = true
-
-    const result = (
+    return (
       <div>
         <BoundInput
           label="Value 1"
@@ -45,16 +40,14 @@ export class DependencyDemo extends React.Component<{
         <Indirection get={() => <div>{this.value2}</div>} />
       </div>
     )
-
-    this.inRender = false
-
-    return result
   }
 }
 
 export interface IWorkbenchProps<T> {
   context: BindingContext
   definition: IBindingDefinitionWithDefault<T>
+  description?: JSX.Element
+  code?: string
 }
 
 @observer
@@ -82,25 +75,35 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
     console.info("workbench renders")
 
     const result = (
-      <div>
-        <BoundInput
-          label="Editor"
-          binding={this.makeBinding()}
-          reset={() => (this.value = this.props.definition.def)}
-        />
-        <label className="pt-label pt-disabled">
-          Source
-          <Indirection
-            get={() => (
-              <input
-                disabled={true}
-                className="pt-input"
-                value={this.value + ""}
-                style={{ width: "100%" }}
-              />
-            )}
+      <div style={{ display: "flex", flexGrow: "1" }}>
+        <div style={{ width: 150, flexShrink: 0 }}>
+          <BoundInput
+            label="Editor"
+            binding={this.makeBinding()}
+            reset={() => (this.value = this.props.definition.def)}
           />
-        </label>
+          <label className="pt-label pt-disabled">
+            Source
+            <Indirection
+              get={() => (
+                <input
+                  disabled={true}
+                  className="pt-input"
+                  value={this.value + ""}
+                  style={{ width: "100%" }}
+                />
+              )}
+            />
+          </label>
+        </div>
+        <div style={{ margin: "0 20px", flexShrink: 0 }}>
+          <pre>
+            <code>{this.props.code}</code>
+          </pre>
+        </div>
+        <div style={{ flexGrow: 1 }}>
+          <blockquote>{this.props.description}</blockquote>
+        </div>
       </div>
     )
 
