@@ -87,7 +87,9 @@ export abstract class Binding<T> extends BindingProvider<T>
     this.context.unregister(this)
   }
 
-  validate() {}
+  validate() {
+    this.push(this.peek())
+  }
 
   onFocus() {}
   onBlur() {}
@@ -206,12 +208,6 @@ class ValidationBinding<T> extends BufferBinding<T> {
   push(value: BindingValue<T>) {
     this.update(value)
     super.push(super.peek())
-  }
-
-  validate() {
-    const value = super.peek()
-    const error = this.validator(value.value)
-    super.update({ value: value.value, error: error })
   }
 
   protected update(value: BindingValue<T>) {
