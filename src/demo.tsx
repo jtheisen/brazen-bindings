@@ -81,7 +81,7 @@ export class Demo extends React.Component {
                     immediately.
                   </div>
                 }
-                code={`bind(model, "value")
+                code={`ctx.bind(model, "value")
   .validate(nonEmpty)`}
               />
             }
@@ -101,7 +101,7 @@ export class Demo extends React.Component {
                     invalid values to be written to the upstream source.
                   </div>
                 }
-                code={`bind(model, "value")
+                code={`ctx.bind(model, "value")
   .bar()
   .validate(nonEmpty)`}
               />
@@ -122,7 +122,7 @@ export class Demo extends React.Component {
                     happen on focus loss.
                   </div>
                 }
-                code={`bind(model, "value")
+                code={`ctx.bind(model, "value")
   .validate(nonEmpty)
   .defer()`}
               />
@@ -144,7 +144,7 @@ export class Demo extends React.Component {
                     deferred until focus loss.
                   </div>
                 }
-                code={`bind(model, "value")
+                code={`ctx.bind(model, "value")
   .defer()
   .validate(nonEmpty)`}
               />
@@ -167,7 +167,7 @@ export class Demo extends React.Component {
                     desired.
                   </div>
                 }
-                code={`bind(model, "value")
+                code={`ctx.bind(model, "value")
   .validate(nonEmpty)
   .validateInitially()`}
               />
@@ -190,7 +190,7 @@ export class Demo extends React.Component {
                     update the upstream source.
                   </div>
                 }
-                code={`bind(model, "value")
+                code={`ctx.bind(model, "value")
   .convert(floatConverter)`}
               />
             }
@@ -216,7 +216,7 @@ export class Demo extends React.Component {
                     <code>defer()</code> to make it happen only on focus loss.
                   </div>
                 }
-                code={`bind(model, "value")
+                code={`ctx.bind(model, "value")
   .fix(s => s.toUpperCase())`}
               />
             }
