@@ -10,6 +10,9 @@ export interface BindingValue<T> {
 export interface IBinding {
   push(value: BindingValue<any>): void
   peek(): BindingValue<any>
+
+  onFocus(): void
+  onBlur(): void
 }
 
 abstract class Converter<S, T> {
@@ -28,6 +31,7 @@ export class BindingContext {
   validateAll() {
     for (const binding of this.bindings) {
       binding.push(binding.peek())
+      binding.onBlur()
     }
   }
 
@@ -190,6 +194,11 @@ class DeferringBinding<T> extends BufferBinding<T> {
 
   push(value: BindingValue<T>) {
     this.update(value)
+  }
+
+  onFocus() {
+    const value = this.peek()
+    this.update({ value: value.value })
   }
 
   onBlur() {
