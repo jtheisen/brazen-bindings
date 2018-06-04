@@ -8,7 +8,7 @@ import { BindingBuilder, BindingContext } from "./bindings"
 class Indirection extends React.Component<{
   get: () => JSX.Element | null | false
 }> {
-  render(): JSX.Element | null | false {
+  render() {
     return this.props.get()
   }
 }
