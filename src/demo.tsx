@@ -86,6 +86,18 @@ export class Demo extends React.Component {
             }
           />
           <pt.Tab
+            id="weak"
+            children="weak"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("", source =>
+                  source.branchWeakly(binding => binding.validate(nonEmpty))
+                )}
+              />
+            }
+          />
+          <pt.Tab
             id="initially-invalid"
             children="initially invalid"
             panel={
