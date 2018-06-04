@@ -1,5 +1,5 @@
 import * as React from "react"
-import { observable } from "mobx"
+import { observable, spy } from "mobx"
 import { observer } from "mobx-react"
 import { BoundInput } from "./bound-inputs"
 import { BindingBuilder, BindingContext } from "./bindings"
@@ -18,22 +18,35 @@ export interface IWorkbenchProps<T> {
   definition: IBindingDefinitionWithDefault<T>
 }
 
-@observer
+//@observer
 export class DependencyDemo extends React.Component<{
   context: BindingContext
 }> {
-  @observable value1 = ""
+  inRender = false
+
+  @observable value1b = ""
+
+  get value1(): string {
+    if (this.inRender) throw Error()
+    return this.value1b
+  }
+  set value1(value) {
+    this.value1b = value
+  }
+  //@observable value1 = ""
   @observable value2 = ""
 
   render() {
-    return (
+    this.inRender = true
+
+    const result = (
       <div>
         <BoundInput
           label="Value 1"
           binding={this.props.context.bind(this, "value1")}
         />
         <BoundInput
-          label="Value 1"
+          label="Value 2"
           binding={this.props.context
             .bind(this, "value2")
             .validate(
@@ -43,8 +56,13 @@ export class DependencyDemo extends React.Component<{
                   : undefined
             )}
         />
+        <Indirection get={() => <div>{this.value2}</div>} />
       </div>
     )
+
+    this.inRender = false
+
+    return result
   }
 }
 

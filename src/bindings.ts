@@ -114,7 +114,7 @@ abstract class GeneralNestedBinding<S, T> extends Binding<T> {
   constructor(private nested: Binding<S>) {
     super(nested.context)
 
-    reaction(() => this.nested.peek(), v => this.update(v))
+    reaction(() => this.nestedPeek(), v => this.update(v))
   }
 
   nestedPush(value: BindingValue<S>) {
@@ -231,10 +231,22 @@ class ValidationBinding<T> extends BufferBinding<T> {
     super.push(super.peek())
   }
 
+  nestedPeek() {
+    const value = super.nestedPeek()
+    const error = this.validator(value.value)
+    return { error: error || value.error, value: value.value }
+  }
+
   protected update(value: BindingValue<T>) {
     const error = this.validator(value.value)
     super.update({ error: error || value.error, value: value.value })
   }
+
+  // doesn't yet help us
+  // private getValidated(value: BindingValue<T>) {
+  //   const error = this.validator(value.value)
+  //   return { error: error || value.error, value: value.value })
+  // }
 }
 
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
