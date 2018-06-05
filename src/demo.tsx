@@ -67,6 +67,26 @@ export class Demo extends React.Component {
           renderActiveTabPanelOnly={this.renderActiveTabPanelOnly}
         >
           <pt.Tab
+            id="readme"
+            children="readme"
+            panel={
+              <div>
+                <h4>Brazen Bindings</h4>
+                <p>
+                  This is my attempt at a type-safe two-way binding and
+                  validation framework for React with mobx.
+                </p>
+                <p>
+                  The tabs on the left let you access the various samples and
+                  you may want to check out the{" "}
+                  <a href="https://github.com/jtheisen/brazen-bindings/">
+                    README on GitHub
+                  </a>.
+                </p>
+              </div>
+            }
+          />
+          <pt.Tab
             id="immediate"
             children="immediate"
             panel={
@@ -202,7 +222,7 @@ export class Demo extends React.Component {
           />
           <pt.Tab
             id="fix"
-            children="fixed"
+            children="fix"
             panel={
               <StringWorkbench
                 context={context}
@@ -218,6 +238,32 @@ export class Demo extends React.Component {
                 }
                 code={`ctx.bind(model, "value")
   .fix(s => s.toUpperCase())`}
+              />
+            }
+          />
+          <pt.Tab
+            id="complex"
+            children="complex"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("x", source =>
+                  source
+                    .bar()
+                    .validate(nonEmpty)
+                    .defer()
+                    .validate(s => (s === "x" ? "no x please" : undefined))
+                    .validateInitially()
+                )}
+                description={<div>This is the example from the teaser.</div>}
+                code={`ctx.bind(model, "value")
+  .bar()
+  .validate(nonEmpty)
+  .defer()
+  .validate(s => s === "x"
+    ? "no x please"
+    : undefined)
+  .validateInitially()`}
               />
             }
           />

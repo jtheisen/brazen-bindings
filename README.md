@@ -19,8 +19,7 @@ The bindings can be modified in a variety of ways, eg.:
   .defer()                    // but show error only on focus loss,
   .validate(specialValidator) // except for this special validation
   .validateInitially()        // which will also be validated right away.
-}
-/>
+}/>
 ```
 
 The bindings are a pipeline consisting of building primitives with very limited responsibility each.
