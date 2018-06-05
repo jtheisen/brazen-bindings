@@ -3,9 +3,14 @@ import { Converter } from "./conversions"
 
 type ValidationResult = string | undefined
 
+export interface BindingError {
+  message: string
+  promise?: Promise
+}
+
 export interface BindingValue<T> {
   value: T
-  error?: string
+  error?: BindingError
 }
 
 export interface IBinding {
@@ -18,6 +23,8 @@ export interface IBinding {
 
 export class BindingContext {
   @observable private bindings: IBinding[] = []
+
+  constructor(private parent?: BindingContext) {}
 
   @computed
   get isValid() {
@@ -39,9 +46,11 @@ export class BindingContext {
     const i = this.bindings.indexOf(binding)
     if (i >= 0) throw Error("Binding already in context.")
     this.bindings.push(binding)
+    if (this.parent) this.parent.register(binding)
   }
 
   unregister(binding: IBinding) {
+    if (this.parent) this.parent.unregister(binding)
     const i = this.bindings.indexOf(binding)
     if (i < 0) throw Error("No such binding in context.")
     this.bindings.splice(i, 1)
