@@ -159,26 +159,6 @@ class FixBinding<T> extends NestedBinding<T> {
   }
 }
 
-class WeakBranchBinding<T> extends NestedBinding<T> {
-  constructor(nested: Binding<T>, private weakNested: Binding<T>) {
-    super(nested)
-  }
-
-  push(value: BindingValue<T>) {
-    super.push(value)
-    this.weakNested.push(value)
-  }
-
-  peek() {
-    const value = super.peek()
-
-    return {
-      value: value.value,
-      error: value.error || this.weakNested.peek().error
-    }
-  }
-}
-
 class BufferBinding<T> extends NestedBinding<T> {
   @observable private buffer: BindingValue<T>
 
@@ -373,20 +353,6 @@ export class BindingBuilder<T> extends BindingProvider<T> {
 
   validate(validate: (value: T) => ValidationResult) {
     return new BindingBuilder(new ValidationBinding(this.binding, validate))
-  }
-
-  branchWeakly(
-    createNested: (builder: BindingBuilder<T>) => BindingBuilder<T>
-  ) {
-    const trivial = new TrivialBinding<T>(this.binding.context, {
-      value: (undefined as any) as T
-    })
-
-    const builder = new BindingBuilder<T>(trivial)
-
-    return new BindingBuilder(
-      new WeakBranchBinding(this.binding, createNested(builder).getBinding())
-    )
   }
 
   throttle(millis: number) {
