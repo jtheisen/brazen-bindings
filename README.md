@@ -36,6 +36,7 @@ The bindings are a pipeline consisting of building primitives with very limited 
 
 The 
 
+
 ### Binding context
 
 Besides presenting validation problems to the user, it's usually necessary to prevent actions such as saving the model in the presence of such errors.
