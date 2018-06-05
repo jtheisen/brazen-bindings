@@ -2,7 +2,7 @@
 
 ## Teaser
 
-This is a [code sandbox](https://codesandbox.io/s/github/jtheisen/brazen-bindings) (*not* a production-ready library) containing my attempt at a framework for type-safe two-way binding and validation in [React](https://reactjs.org/) with [MobX](https://github.com/mobxjs/mobx).
+This is a [code sandbox](https://codesandbox.io/s/github/jtheisen/brazen-bindings) (*not* a production-ready library) containing my attempt at a framework for type-safe two-way binding and validation in [React](https://reactjs.org/) with [MobX](https://github.com/mobxjs/mobx). For a demo, click on the sandbox link.
 
 With it, you can write a component `<MyInput />` that can be bound against MobX observerbale models within a render function like this:
 
