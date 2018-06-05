@@ -320,7 +320,7 @@ class ResetOnFocusBinding<T> extends NestedBinding<T> {
   }
 }
 
-class InitialValidationBinding<T> extends BufferBinding<T> {
+class InitialValidationBinding<T> extends NestedBinding<T> {
   private hadOnce = false
 
   constructor(nested: Binding<T>) {
@@ -393,7 +393,9 @@ export class BindingBuilder<T> extends BindingProvider<T> {
   }
 
   validateInitially() {
-    return new BindingBuilder(new InitialValidationBinding(this.binding))
+    return new BindingBuilder(
+      new InitialValidationBinding(this.binding)
+    ).buffer()
   }
 
   validateOnBlur() {
