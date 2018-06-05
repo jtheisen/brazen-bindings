@@ -320,7 +320,7 @@ class ResetOnFocusBinding<T> extends NestedBinding<T> {
   }
 }
 
-class InitialValidationBinding<T> extends NestedBinding<T> {
+class InitialValidationBinding<T> extends BufferBinding<T> {
   private hadOnce = false
 
   constructor(nested: Binding<T>) {
