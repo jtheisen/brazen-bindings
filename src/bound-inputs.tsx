@@ -34,6 +34,31 @@ class BindingOpener<T> extends React.Component<{ binding: Binding<T> }> {
   }
 }
 
+interface IBInputExtraProps {
+  binding: Binding<string>
+}
+
+type BInputProps = IBInputExtraProps &
+  React.DetailedHTMLProps<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    HTMLInputElement
+  >
+
+class BInput extends React.Component<BInputProps> {
+  render() {
+    const { binding, ...rest } = this.props
+    return (
+      <input
+        {...rest}
+        value={binding.peek().value}
+        onChange={e => binding.push({ value: e.currentTarget.value })}
+        onFocus={() => binding.onFocus()}
+        onBlur={() => binding.onBlur()}
+      />
+    )
+  }
+}
+
 @observer
 @pt.HotkeysTarget
 export class BoundInput extends React.Component<IBoundInputProps<string>> {
@@ -63,13 +88,7 @@ export class BoundInput extends React.Component<IBoundInputProps<string>> {
             "pt-intent-danger": haveError
           })}
         >
-          <input
-            className="pt-input"
-            value={binding.peek().value}
-            onChange={e => binding.push({ value: e.currentTarget.value })}
-            onFocus={() => binding.onFocus()}
-            onBlur={() => binding.onBlur()}
-          />
+          <BInput className="pt-input" binding={binding} />
           {this.props.reset && (
             <button
               className="pt-button pt-minimal"
