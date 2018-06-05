@@ -5,7 +5,7 @@ type ValidationResult = string | undefined
 
 export interface BindingError {
   message: string
-  promise?: Promise
+  promise?: Promise<any>
 }
 
 export interface BindingValue<T> {
@@ -31,11 +31,21 @@ export class BindingContext {
     return this.bindings.every(b => !b.peek().error)
   }
 
-  validateAll() {
+  async validateAll() {
+    // This causes all validations to trigger.
     for (const binding of this.bindings) {
       binding.push(binding.peek())
       binding.onBlur()
     }
+
+    // isValid would be already correct here
+    // unless there's async validation also.
+    const promises = this.bindings
+      .map(v => v.peek().error)
+      .filter(e => e && e.promise)
+    await Promise.all(promises)
+
+    return this.isValid
   }
 
   bind<M, P extends keyof M>(model: M, prop: P): BindingBuilder<M[P]> {
@@ -218,10 +228,10 @@ class ValidationBinding<T> extends BufferBinding<T> {
     nested: Binding<T>,
     private validator: (value: T) => ValidationResult
   ) {
+    super(nested)
     // Super strange: taking this out makes mobx catch an exception
     // in the dependency sample, but in any case the sample works.
     if (!validator) console.info("error!")
-    super(nested)
   }
 
   push(value: BindingValue<T>) {
@@ -238,31 +248,42 @@ class ValidationBinding<T> extends BufferBinding<T> {
   }
 
   private getValidated(value: BindingValue<T>) {
-    const error = this.validator(value.value)
-    return { error: error || value.error, value: value.value }
+    const errorOrNot = this.validator(value.value)
+    return errorOrNot
+      ? { error: { message: errorOrNot }, value: value.value }
+      : value
   }
 }
 
 class AsyncValidationBinding<T> extends BufferBinding<T> {
-  currentPromise?: Promise<BindingValue<T>>
+  currentPromise?: Promise<ValidationResult>
 
   constructor(
     nested: Binding<T>,
-    private validator: (value: T) => ValidationResult
+    private validator: (value: T) => Promise<ValidationResult>
   ) {
     super(nested)
   }
 
-  protected async update(value: BindingValue<T>) {
-    super.update(value)
-    await this.updateValidation(value)
+  protected update(value: BindingValue<T>) {
+    this.updateValidation(value)
+    const valueWithCaveat = {
+      value: value.value,
+      error: {
+        message: "validating...",
+        promise: this.currentPromise }
+    }
+    super.update(valueWithCaveat)
   }
 
   private async updateValidation(value: BindingValue<T>) {
     const promise = (this.currentPromise = this.validator(value.value))
-    const error = await promise
+    const errorOrNot = await promise
     if (this.currentPromise === promise) {
-      super.update({ error: error || value.error, value: value.value })
+      super.update(errorOrNot
+        ? { error: { message: errorOrNot }, value: value.value }
+        : value
+      )
     }
   }
 }
@@ -327,7 +348,7 @@ class ThrottleBinding<T> extends NestedBinding<T> {
   }
 
   protected update(value: BindingValue<T>) {
-    this.currentKey = {}
+    this.pendingValue = undefined
   }
 }
 
