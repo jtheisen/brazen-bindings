@@ -34,17 +34,17 @@ class BindingOpener<T> extends React.Component<{ binding: Binding<T> }> {
   }
 }
 
-interface IBInputExtraProps {
+export interface BoundInputExtraProps {
   binding: Binding<string>
 }
 
-type BInputProps = IBInputExtraProps &
+export type BoundInputProps = BoundInputExtraProps &
   React.DetailedHTMLProps<
     React.InputHTMLAttributes<HTMLInputElement>,
     HTMLInputElement
   >
 
-class BInput extends React.Component<BInputProps> {
+export class BoundInput extends React.Component<BoundInputProps> {
   render() {
     const { binding, ...rest } = this.props
     return (
@@ -61,7 +61,7 @@ class BInput extends React.Component<BInputProps> {
 
 @observer
 @pt.HotkeysTarget
-export class BoundInput extends React.Component<IBoundInputProps<string>> {
+export class MyInput extends React.Component<IBoundInputProps<string>> {
   constructor(props: IBoundInputProps<string>) {
     super(props)
   }
@@ -88,7 +88,7 @@ export class BoundInput extends React.Component<IBoundInputProps<string>> {
             "pt-intent-danger": haveError
           })}
         >
-          <BInput className="pt-input" binding={binding} />
+          <BoundInput className="pt-input" binding={binding} />
           {this.props.reset && (
             <button
               className="pt-button pt-minimal"
