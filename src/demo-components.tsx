@@ -1,7 +1,7 @@
 import * as React from "react"
 import { observable } from "mobx"
 import { observer } from "mobx-react"
-import { BoundInput } from "./bound-inputs"
+import { MyInput } from "./bound-inputs"
 import { BindingBuilder, BindingContext } from "./bindings"
 
 @observer
@@ -23,11 +23,11 @@ export class DependencyDemo extends React.Component<{
     return (
       <div className="workbench">
         <div>
-          <BoundInput
+          <MyInput
             label="Value 1"
             binding={this.props.context.bind(this, "value1")}
           />
-          <BoundInput
+          <MyInput
             label="Value 2"
             binding={this.props.context
               .bind(this, "value2")
@@ -99,7 +99,7 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
     const result = (
       <div className="workbench">
         <div>
-          <BoundInput
+          <MyInput
             label="Editor"
             binding={this.makeBinding()}
             reset={() => (this.value = this.props.definition.def)}
