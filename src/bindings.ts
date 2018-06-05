@@ -270,7 +270,8 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
     const result = this.converter.convert(value.value)
     const error = value.error || result.error
     this.buffer = { value: value.value, error: error }
-    if (!result.error) super.nestedPush(this.buffer)
+    if (!result.error)
+      super.nestedPush({ value: result.value, error: result.error })
   }
 
   peek() {
