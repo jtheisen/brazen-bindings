@@ -42,7 +42,7 @@ export class DependencyDemo extends React.Component<{
         </div>
         <div>
           <pre>
-            <code>{`context.bind(model, "val2")
+            <code>{`ctx.bind(model, "val2")
   .validate(v =>
   v.length > model.val1.length
     ? "value 2 must not be"
@@ -54,7 +54,7 @@ export class DependencyDemo extends React.Component<{
         </div>
         <div>
           <blockquote>
-            Writing ad-hoc validation code depending on other sources than the
+            Writing ad-hoc validation code depending on sources other than the
             one currently bound against is easy. Note how the second field's
             error status updates even when the first field is edited: That's
             because the validator is evaluated within a mobx computation also.
