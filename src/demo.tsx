@@ -20,6 +20,7 @@ function delay(millis: number) {
 }
 
 async function notFooAsync(value: string): Promise<string | undefined> {
+  console.info("notFooAsync fake request")
   await delay(1000)
   return value.trim() !== "foo" ? undefined : "foo already taken"
 }

@@ -172,7 +172,7 @@ class BufferBinding<T> extends NestedBinding<T> {
   }
 
   push(value: BindingValue<T>) {
-    this.update(value)
+    //this.update(value)
     super.push(value)
   }
 
@@ -209,6 +209,9 @@ class ValidationBinding<T> extends BufferBinding<T> {
     nested: Binding<T>,
     private validator: (value: T) => ValidationResult
   ) {
+    // Super strange: taking this out makes mobx catch an exception
+    // in the dependency sample, but in any case the sample works.
+    if (!validator) console.info("error!")
     super(nested)
   }
 
@@ -241,11 +244,6 @@ class AsyncValidationBinding<T> extends BufferBinding<T> {
     super(nested)
   }
 
-  push(value: BindingValue<T>) {
-    super.push(value)
-    this.updateValidation(value)
-  }
-
   protected async update(value: BindingValue<T>) {
     super.update(value)
     await this.updateValidation(value)
@@ -254,7 +252,6 @@ class AsyncValidationBinding<T> extends BufferBinding<T> {
   private async updateValidation(value: BindingValue<T>) {
     const promise = (this.currentPromise = this.validator(value.value))
     const error = await promise
-    console.info(":" + error)
     if (this.currentPromise === promise) {
       super.update({ error: error || value.error, value: value.value })
     }
