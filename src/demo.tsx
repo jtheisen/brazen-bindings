@@ -15,6 +15,15 @@ function nonEmpty(value: string) {
   return value.trim() ? undefined : "value should not be empty"
 }
 
+function delay(millis: number) {
+  return new Promise<void>((resolve, reject) => setTimeout(resolve, millis))
+}
+
+async function notFooAsync(value: string): Promise<string | undefined> {
+  await delay(1000)
+  return value.trim() !== "foo" ? undefined : "foo already taken"
+}
+
 @observer
 class ValidationDisplay extends React.Component<{ context: BindingContext }> {
   render() {
@@ -258,6 +267,27 @@ export class Demo extends React.Component {
                 }
                 code={`ctx.bind(model, "value")
   .throttle(1000)`}
+              />
+            }
+          />
+          <pt.Tab
+            id="async"
+            children="async"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("", source =>
+                  source.validateAsync(notFooAsync)
+                )}
+                description={
+                  <div>
+                    The `notFooAsync` validator mimics a server request that
+                    realizes after a second that the name <em>foo</em> is
+                    already taken.
+                  </div>
+                }
+                code={`ctx.bind(model, "value")
+  .validate(notFooAsync)`}
               />
             }
           />

@@ -210,8 +210,6 @@ class ValidationBinding<T> extends BufferBinding<T> {
     private validator: (value: T) => ValidationResult
   ) {
     super(nested)
-
-    super.update({ value: (undefined as any) as T })
   }
 
   push(value: BindingValue<T>) {
@@ -227,10 +225,39 @@ class ValidationBinding<T> extends BufferBinding<T> {
     super.update(this.getValidated(value))
   }
 
-  // doesn't yet help us, is should factor our nestedPeek and update
   private getValidated(value: BindingValue<T>) {
     const error = this.validator(value.value)
     return { error: error || value.error, value: value.value }
+  }
+}
+
+class AsyncValidationBinding<T> extends BufferBinding<T> {
+  currentPromise?: Promise<BindingValue<T>>
+
+  constructor(
+    nested: Binding<T>,
+    private validator: (value: T) => ValidationResult
+  ) {
+    super(nested)
+  }
+
+  push(value: BindingValue<T>) {
+    super.push(value)
+    this.updateValidation(value)
+  }
+
+  protected async update(value: BindingValue<T>) {
+    super.update(value)
+    await this.updateValidation(value)
+  }
+
+  private async updateValidation(value: BindingValue<T>) {
+    const promise = (this.currentPromise = this.validator(value.value))
+    const error = await promise
+    console.info(":" + error)
+    if (this.currentPromise === promise) {
+      super.update({ error: error || value.error, value: value.value })
+    }
   }
 }
 
@@ -352,6 +379,12 @@ export class BindingBuilder<T> extends BindingProvider<T> {
     return new BindingBuilder(new ValidationBinding(this.binding, validate))
   }
 
+  validateAsync(validate: (value: T) => Promise<ValidationResult>) {
+    return new BindingBuilder(
+      new AsyncValidationBinding(this.binding, validate)
+    )
+  }
+
   throttle(millis: number) {
     return new BindingBuilder(
       new ThrottleBinding(this.binding, millis)
@@ -362,6 +395,17 @@ export class BindingBuilder<T> extends BindingProvider<T> {
     return new BindingBuilder(
       new InitialValidationBinding(this.binding)
     ).buffer()
+  }
+
+  conditionally(
+    flag: boolean,
+    modifier: (builder: BindingBuilder<T>) => BindingBuilder<T>
+  ) {
+    if (flag) {
+      return modifier(this)
+    } else {
+      return this
+    }
   }
 
   apply<T2>(f: (binding: Binding<T>) => Binding<T2>) {
