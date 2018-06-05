@@ -242,6 +242,26 @@ export class Demo extends React.Component {
             }
           />
           <pt.Tab
+            id="throttle"
+            children="throttle"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("", source => source.throttle(1000))}
+                description={
+                  <div>
+                    Throttling is often used with input fields for incremental
+                    searches. Normally it's not done on the binding level, but
+                    there is a tiny advantage when doing it here: focus loss
+                    updates the source immediately.
+                  </div>
+                }
+                code={`ctx.bind(model, "value")
+  .throttle(1000)`}
+              />
+            }
+          />
+          <pt.Tab
             id="complex"
             children="complex"
             panel={

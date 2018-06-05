@@ -269,35 +269,32 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
 }
 
 class ThrottleBinding<T> extends NestedBinding<T> {
-  currentKey = {}
+  pendingValue?: BindingValue<T>
 
   constructor(nested: Binding<T>, private millis: number) {
     super(nested)
   }
 
   push(value: BindingValue<T>) {
-    const key = (this.currentKey = {})
+    this.pendingValue = value
     setTimeout(() => {
-      if (this.currentKey === key) super.push(value)
+      if (this.pendingValue === value) this.flush()
     }, this.millis)
+  }
+
+  onBlur() {
+    this.flush()
+  }
+
+  flush() {
+    if (this.pendingValue) {
+      super.push(this.pendingValue)
+      this.pendingValue = undefined
+    }
   }
 
   protected update(value: BindingValue<T>) {
     this.currentKey = {}
-  }
-}
-
-// unused, behavior currently present anyhow
-class ValidationOnBlurBinding<T> extends NestedBinding<T> {
-  onBlur() {
-    this.validate()
-  }
-}
-
-// not sensible this way and currently unused
-class ResetOnFocusBinding<T> extends NestedBinding<T> {
-  onFocus() {
-    this.push(this.peek())
   }
 }
 
@@ -356,21 +353,15 @@ export class BindingBuilder<T> extends BindingProvider<T> {
   }
 
   throttle(millis: number) {
-    return new BindingBuilder(new ThrottleBinding(this.binding, millis))
+    return new BindingBuilder(
+      new ThrottleBinding(this.binding, millis)
+    ).buffer()
   }
 
   validateInitially() {
     return new BindingBuilder(
       new InitialValidationBinding(this.binding)
     ).buffer()
-  }
-
-  validateOnBlur() {
-    return new BindingBuilder(new ValidationOnBlurBinding(this.binding))
-  }
-
-  resetOnFocus() {
-    return new BindingBuilder(new ResetOnFocusBinding(this.binding))
   }
 
   apply<T2>(f: (binding: Binding<T>) => Binding<T2>) {
