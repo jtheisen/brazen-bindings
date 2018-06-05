@@ -10,7 +10,7 @@ interface IBoundInputProps<T> {
   reset?: () => void
 }
 
-class BindingOpener<T> extends React.Component<{ binding: Binding<T> }> {
+class BoundComponent<T, P> extends React.Component<{ binding: Binding<T> } & P> {
   componentDidMount() {
     console.info("opening")
     this.props.binding.open()
@@ -29,22 +29,18 @@ class BindingOpener<T> extends React.Component<{ binding: Binding<T> }> {
     this.props.binding.close()
   }
 
-  render() {
+  render(): JSX.Element | null | false {
     return null
   }
 }
 
-export interface BoundInputExtraProps {
-  binding: Binding<string>
-}
-
-export type BoundInputProps = BoundInputExtraProps &
+type InputProps =
   React.DetailedHTMLProps<
     React.InputHTMLAttributes<HTMLInputElement>,
     HTMLInputElement
   >
 
-export class BoundInput extends React.Component<BoundInputProps> {
+export class BoundInput extends BoundComponent<string, InputProps> {
   render() {
     const { binding, ...rest } = this.props
     return (
@@ -78,7 +74,6 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
           "pt-intent-danger": haveError
         })}
       >
-        <BindingOpener binding={binding} />
         {this.props.label && (
           <label className="pt-label">{this.props.label}</label>
         )}
