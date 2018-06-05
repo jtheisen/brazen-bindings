@@ -137,8 +137,6 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
   makeBinding() {
     const result = this.props.definition
       .makeBinding(this.props.context.bind(this, "loggedValue"))
-      .buffer()
-    console.info("made binding")
     return result
   }
 }
