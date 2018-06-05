@@ -7,7 +7,7 @@ This is a code sandbox (*not* a production-ready library) containing an my attem
 With it, you can write a component `<MyInput />` that can be bound against mobx observerbale models within a render function like this:
 
 ```tsx
-<MyInput binding={context.bind(model, "somePropertyOfModel")}>
+<MyInput binding={context.bind(model, "somePropertyOfModel")} />
 ```
 
 The bindings can be modified in a variety of ways, eg.:
@@ -19,7 +19,8 @@ The bindings can be modified in a variety of ways, eg.:
   .defer()                    // but show error only on focus loss,
   .validate(specialValidator) // except for this special validation
   .validateInitially()        // which will also be validated right away.
-}>
+}
+/>
 ```
 
 The bindings are a pipeline consisting of building primitives with very limited responsibility each.
