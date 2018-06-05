@@ -10,22 +10,21 @@ interface IBoundInputProps<T> {
   reset?: () => void
 }
 
-class BoundComponent<T, P> extends React.Component<{ binding: Binding<T> } & P> {
+type BoundComponentProps<T, P> = { binding: Binding<T> } & P
+
+class BoundComponent<T, P> extends React.Component<BoundComponentProps<T, P>> {
   componentDidMount() {
-    console.info("opening")
     this.props.binding.open()
   }
 
-  componentWillReceiveProps(props: { binding: Binding<T> }) {
+  componentWillReceiveProps(props: Readonly<BoundComponentProps<T, P>>) {
     if (this.props.binding !== props.binding) {
-      console.info("switching")
       this.props.binding.close()
       props.binding.open()
     }
   }
 
   componentWillUnmount() {
-    console.info("closing")
     this.props.binding.close()
   }
 
@@ -34,11 +33,10 @@ class BoundComponent<T, P> extends React.Component<{ binding: Binding<T> } & P> 
   }
 }
 
-type InputProps =
-  React.DetailedHTMLProps<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    HTMLInputElement
-  >
+type InputProps = React.DetailedHTMLProps<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  HTMLInputElement
+>
 
 export class BoundInput extends BoundComponent<string, InputProps> {
   render() {
@@ -63,7 +61,7 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
   }
 
   render() {
-    console.info("bound input renders")
+    console.info("my input renders")
 
     const binding: Binding<string> = this.props.binding.getBinding()
     const haveError = !!binding.peek().error
@@ -99,7 +97,7 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
       </div>
     )
 
-    console.info("bound input finished rendering")
+    console.info("my input finished rendering")
 
     return result
   }
