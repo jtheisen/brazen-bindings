@@ -294,12 +294,15 @@ export class Demo extends React.Component {
               <StringWorkbench
                 context={context}
                 definition={defineBinding("", source =>
-                  source.validateAsync(notFooAsync).validate(nonEmpty)
+                  source
+                    .validateAsync(notFooAsync)
+                    .throttle(1000)
+                    .validate(nonEmpty)
                 )}
                 description={
                   <div>
-                    The `notFooAsync` validator mimics a server request that
-                    realizes after a second that the name <em>foo</em> is
+                    The sample `notFooAsync` validator mimics a server request
+                    that realizes after a second that the name <em>foo</em> is
                     already taken.
                   </div>
                 }

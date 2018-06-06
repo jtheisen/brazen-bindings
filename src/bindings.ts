@@ -38,14 +38,8 @@ export class BindingContext {
     // unless there's async validation also.
     const promises = this.bindings
       .map(v => v.peek().error)
-      .filter(e => e && e.promise)
-    //console.info("got " + promises.length + " promises")
-    //await Promise.all(promises)
-    for (const promise of promises) {
-      await promise
-    }
-
-    return this.isValid
+      .map(e => e && e.promise)
+    await Promise.all(promises)
   }
 
   bind<M, P extends keyof M>(model: M, prop: P): BindingBuilder<M[P]> {
