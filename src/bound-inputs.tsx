@@ -83,31 +83,20 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
 
     const binding: Binding<string> = this.props.binding.getBinding()
     const error = binding.peek().error
-    const haveError = !!error
+    const intent = error ? this.getIntent(error.level) : pt.Intent.NONE
+    const withPromise = error && error.promise && true
+    const inputGroupExtraClass = "pt-intent-" + intent.toLowerCase()
     const result = (
-      <div
-        className={classnames({
-          "pt-form-group": true,
-          "pt-intent-danger": haveError
-        })}
-      >
+      <pt.FormGroup intent={intent}>
         {this.props.label && (
           <label className="pt-label">{this.props.label}</label>
         )}
-        <div
-          className={classnames({
-            "pt-input-group": true,
-            "pt-intent-danger": haveError
-          })}
-        >
+        <div className={classnames("pt-input-group", inputGroupExtraClass)}>
           <BoundInput className="pt-input" binding={binding} />
-          {this.props.reset && (
-            <button
-              className="pt-button pt-minimal"
-              onClick={() => this.props.reset!()}
-            >
-              reset
-            </button>
+          {withPromise && (
+            <span className="pt-input-action">
+              <pt.Spinner small={true} />
+            </span>
           )}
         </div>
         <div className="pt-form-helper-text">
@@ -115,7 +104,7 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
             <pt.Text ellipsize={true}>{error && error.message}&nbsp;</pt.Text>
           </strong>
         </div>
-      </div>
+      </pt.FormGroup>
     )
 
     console.info("my input finished rendering")
