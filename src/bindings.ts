@@ -1,25 +1,11 @@
+import {
+  IBinding,
+  BindingValue,
+  BindingErrorLevel,
+  ValidationResult
+} from "./fundamentals"
 import { observable, reaction, computed } from "mobx"
 import { Converter } from "./conversions"
-
-type ValidationResult = string | undefined
-
-export interface BindingError {
-  message: string
-  promise?: Promise<any>
-}
-
-export interface BindingValue<T> {
-  value: T
-  error?: BindingError
-}
-
-export interface IBinding {
-  push(value: BindingValue<any>): void
-  peek(): BindingValue<any>
-
-  onFocus(): void
-  onBlur(): void
-}
 
 export class BindingContext {
   @observable private bindings: IBinding[] = []
@@ -50,6 +36,10 @@ export class BindingContext {
 
   bind<M, P extends keyof M>(model: M, prop: P): BindingBuilder<M[P]> {
     return new BindingBuilder(new PropertyBinding<M, P>(this, model, prop))
+  }
+
+  trivial<T>(value: BindingValue<T>) {
+    return new BindingBuilder(new TrivialBinding(this, value))
   }
 
   register(binding: IBinding) {
@@ -160,24 +150,6 @@ class NestedBinding<T> extends GeneralNestedBinding<T, T> {
   }
 }
 
-class BarBinding<T> extends NestedBinding<T> {
-  push(value: BindingValue<T>) {
-    if (!value.error) {
-      super.push(value)
-    }
-  }
-}
-
-class FixBinding<T> extends NestedBinding<T> {
-  constructor(nested: Binding<T>, private fix: (value: T) => T) {
-    super(nested)
-  }
-
-  push(value: BindingValue<T>) {
-    super.push({ value: this.fix(value.value), error: value.error })
-  }
-}
-
 class BufferBinding<T> extends NestedBinding<T> {
   @observable private buffer: BindingValue<T>
 
@@ -208,6 +180,26 @@ class BufferBinding<T> extends NestedBinding<T> {
   }
 }
 
+class BarBinding<T> extends BufferBinding<T> {
+  push(value: BindingValue<T>) {
+    if (!value.error) {
+      super.push(value)
+    } else {
+      super.update(value)
+    }
+  }
+}
+
+class FixBinding<T> extends NestedBinding<T> {
+  constructor(nested: Binding<T>, private fix: (value: T) => T) {
+    super(nested)
+  }
+
+  push(value: BindingValue<T>) {
+    super.push({ value: this.fix(value.value), error: value.error })
+  }
+}
+
 class DeferringBinding<T> extends BufferBinding<T> {
   push(value: BindingValue<T>) {
     this.update(value)
@@ -226,7 +218,8 @@ class DeferringBinding<T> extends BufferBinding<T> {
 class ValidationBinding<T> extends BufferBinding<T> {
   constructor(
     nested: Binding<T>,
-    private validator: (value: T) => ValidationResult
+    private validator: (value: T) => ValidationResult,
+    private level: BindingErrorLevel = BindingErrorLevel.Error
   ) {
     super(nested)
     // Super strange: taking this out makes mobx catch an exception
@@ -247,42 +240,52 @@ class ValidationBinding<T> extends BufferBinding<T> {
     super.update(this.getValidated(value))
   }
 
-  private getValidated(value: BindingValue<T>) {
+  private getValidated(value: BindingValue<T>): BindingValue<T> {
     const errorOrNot = this.validator(value.value)
     return errorOrNot
-      ? { error: { message: errorOrNot }, value: value.value }
+      ? {
+          error: { level: this.level, message: errorOrNot },
+          value: value.value
+        }
       : value
   }
 }
 
 class AsyncValidationBinding<T> extends BufferBinding<T> {
-  currentPromise?: Promise<ValidationResult>
+  currentPromise?: Promise<any>
 
   constructor(
     nested: Binding<T>,
-    private validator: (value: T) => Promise<ValidationResult>
+    private validator: (value: T) => Promise<ValidationResult>,
+    private level = BindingErrorLevel.Error
   ) {
     super(nested)
   }
 
   protected update(value: BindingValue<T>) {
-    this.updateValidation(value)
+    this.updateAsync(value)
     const valueWithCaveat = {
       value: value.value,
       error: {
+        level: BindingErrorLevel.None,
         message: "validating...",
-        promise: this.currentPromise }
+        promise: this.currentPromise
+      }
     }
     super.update(valueWithCaveat)
   }
 
-  private async updateValidation(value: BindingValue<T>) {
+  private async updateAsync(value: BindingValue<T>) {
     const promise = (this.currentPromise = this.validator(value.value))
     const errorOrNot = await promise
     if (this.currentPromise === promise) {
-      super.update(errorOrNot
-        ? { error: { message: errorOrNot }, value: value.value }
-        : value
+      super.update(
+        errorOrNot
+          ? {
+              error: { level: this.level, message: errorOrNot },
+              value: value.value
+            }
+          : value
       )
     }
   }

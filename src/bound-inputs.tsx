@@ -64,7 +64,8 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
     console.info("my input renders")
 
     const binding: Binding<string> = this.props.binding.getBinding()
-    const haveError = !!binding.peek().error
+    const error = binding.peek().error
+    const haveError = !!error
     const result = (
       <div
         className={classnames({
@@ -92,7 +93,9 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
           )}
         </div>
         <div className="pt-form-helper-text">
-          <strong>{binding.peek().error}</strong>
+          <strong>
+            <pt.Text ellipsize={true}>{error && error.message}&nbsp;</pt.Text>
+          </strong>
         </div>
       </div>
     )

@@ -278,7 +278,7 @@ export class Demo extends React.Component {
               <StringWorkbench
                 context={context}
                 definition={defineBinding("", source =>
-                  source.validateAsync(notFooAsync)
+                  source.validateAsync(notFooAsync).validate(nonEmpty)
                 )}
                 description={
                   <div>
@@ -288,7 +288,8 @@ export class Demo extends React.Component {
                   </div>
                 }
                 code={`ctx.bind(model, "value")
-  .validate(notFooAsync)`}
+  .validateAsync(notFooAsync)
+  .validate(nonEmpty)`}
               />
             }
           />
