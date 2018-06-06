@@ -42,6 +42,25 @@ class ValidationDisplay extends React.Component<{ context: BindingContext }> {
 }
 
 @observer
+export class ValidationButton extends React.Component {
+  @observable validating = false
+
+  async validate() {
+    this.validating = true
+    await context.validateAll()
+    this.validating = false
+  }
+
+  render() {
+    return (
+      <pt.Button loading={this.validating} onClick={() => this.validate()}>
+        validate
+      </pt.Button>
+    )
+  }
+}
+
+@observer
 export class Demo extends React.Component {
   @observable renderActiveTabPanelOnly = true
 
@@ -49,7 +68,6 @@ export class Demo extends React.Component {
     return (
       <div style={{ marginTop: 20 }}>
         <ValidationDisplay context={context} />
-        <div />
         <div
           style={{
             display: "flex",
@@ -67,9 +85,7 @@ export class Demo extends React.Component {
             }
           />
           <div style={{ flexGrow: 5 }} />
-          <button className="pt-button" onClick={() => context.validateAll()}>
-            validate
-          </button>
+          <ValidationButton />
         </div>
         <pt.Tabs
           id="SampleTabs"

@@ -13,8 +13,18 @@ export class BindingContext {
   constructor(private parent?: BindingContext) {}
 
   @computed
+  get maxErrorLevel() {
+    return this.bindings
+      .map(b => {
+        const error = b.peek().error
+        return error ? error.level : BindingErrorLevel.None
+      })
+      .reduce((p, c) => Math.max(p, c), BindingErrorLevel.None)
+  }
+
+  @computed
   get isValid() {
-    return this.bindings.every(b => !b.peek().error)
+    return this.maxErrorLevel < BindingErrorLevel.Error
   }
 
   async validateAll() {
@@ -29,7 +39,11 @@ export class BindingContext {
     const promises = this.bindings
       .map(v => v.peek().error)
       .filter(e => e && e.promise)
-    await Promise.all(promises)
+    //console.info("got " + promises.length + " promises")
+    //await Promise.all(promises)
+    for (const promise of promises) {
+      await promise
+    }
 
     return this.isValid
   }
