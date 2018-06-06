@@ -1,6 +1,7 @@
 import * as React from "react"
 import { observer } from "mobx-react"
 import * as classnames from "classnames"
+import { BindingErrorLevel } from "./fundamentals"
 import { Binding, BindingProvider } from "./bindings"
 import * as pt from "@blueprintjs/core"
 
@@ -58,6 +59,23 @@ export class BoundInput extends BoundComponent<string, InputProps> {
 export class MyInput extends React.Component<IBoundInputProps<string>> {
   constructor(props: IBoundInputProps<string>) {
     super(props)
+  }
+
+  getIntent(level: BindingErrorLevel) {
+    switch (level) {
+      case BindingErrorLevel.None:
+        return pt.Intent.NONE
+      case BindingErrorLevel.Information:
+        return pt.Intent.PRIMARY
+      case BindingErrorLevel.Warning:
+        return pt.Intent.WARNING
+      case BindingErrorLevel.Error:
+        return pt.Intent.DANGER
+      case BindingErrorLevel.Fatal:
+        return pt.Intent.DANGER
+      default:
+        return pt.Intent.DANGER
+    }
   }
 
   render() {
