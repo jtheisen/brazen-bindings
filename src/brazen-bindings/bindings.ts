@@ -1,11 +1,12 @@
 import {
   IBinding,
   BindingValue,
+  BindingError,
   BindingErrorLevel,
   ValidationResult
 } from "./fundamentals"
 import { observable, reaction, computed } from "mobx"
-import { Converter } from "./conversions"
+import { Converter, ConversionResult } from "./conversions"
 
 export class BindingContext {
   @observable private bindings: IBinding[] = []
@@ -313,10 +314,10 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
 
   push(value: BindingValue<T>) {
     const result = this.converter.convert(value.value)
-    const error = value.error || result.error
+    const error = value.error || this.getBindingError(result)
     this.buffer = { value: value.value, error: error }
-    if (!result.error)
-      super.nestedPush({ value: result.value, error: result.error })
+    if (!(result instanceof Error))
+      super.nestedPush({ value: result })
   }
 
   peek() {
@@ -330,6 +331,12 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   protected update(value: BindingValue<S>) {
     const newValue = this.converter.convertBack(value.value)
     this.buffer = { value: newValue, error: value.error }
+  }
+
+  private getBindingError(result: ConversionResult<S>): BindingError | undefined {
+    return result instanceof Error
+      ? { message: result.message, level: BindingErrorLevel.Error }
+      : undefined
   }
 }
 

@@ -1,6 +1,6 @@
 import * as React from "react"
 import { render } from "react-dom"
-import { Demo } from "./demo"
+import { Demo } from "./demo/demo"
 import { FocusStyleManager } from "@blueprintjs/core"
 
 import "@blueprintjs/core/lib/css/blueprint.css"

@@ -4,4 +4,6 @@ export { BindingValue, BindingError, BindingErrorLevel, MessageType, Validator, 
 
 export { Binding, BindingBuilder, BindingContext, BindingProvider } from "./brazen-bindings/bindings"
 
-export { BoundInput } from "./brazen-bindings/bound-inputs"
+export { BoundInput } from "./brazen-bindings/bound-input"
+
+export { floatConverter } from "./brazen-bindings/conversions"

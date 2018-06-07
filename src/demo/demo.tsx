@@ -1,9 +1,9 @@
-import { BindingContext } from "./bindings"
-import { floatConverter } from "./conversions"
+import { BindingContext, floatConverter } from "../brazen-bindings"
 import * as React from "react"
 import { observable } from "mobx"
 import { observer } from "mobx-react"
-import { defineBinding, Workbench, DependencyDemo } from "./demo-components"
+import { defineBinding, Workbench } from "./demo-components"
+import { DependencyDemo } from "./dependency-demo"
 import * as pt from "@blueprintjs/core"
 
 const context = new BindingContext()

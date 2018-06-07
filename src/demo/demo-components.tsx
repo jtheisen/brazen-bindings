@@ -1,8 +1,8 @@
 import * as React from "react"
 import { observable } from "mobx"
 import { observer } from "mobx-react"
-import { BoundInput, BindingProvider } from "./bound-inputs"
-import { BindingBuilder, BindingContext } from "./bindings"
+import * as classnames from "classnames"
+import { BindingBuilder, BindingContext, BindingErrorLevel, BoundInput, BindingProvider } from "../brazen-bindings"
 import * as pt from "@blueprintjs/core"
 
 @observer
@@ -47,7 +47,7 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
   render() {
     console.info("my input renders")
 
-    const binding: Binding<string> = this.props.binding.getBinding()
+    const binding = this.props.binding.getBinding()
     const error = binding.peek().error
     const intent = error ? this.getIntent(error.level) : pt.Intent.NONE
     const withPromise = error && error.promise && true
