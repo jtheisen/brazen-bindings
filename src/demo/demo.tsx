@@ -42,25 +42,6 @@ class ValidationDisplay extends React.Component<{ context: BindingContext }> {
 }
 
 @observer
-export class ValidationButton extends React.Component {
-  @observable validating = false
-
-  async validate() {
-    this.validating = true
-    await context.validateAll()
-    this.validating = false
-  }
-
-  render() {
-    return (
-      <pt.Button loading={this.validating} onClick={() => this.validate()}>
-        validate
-      </pt.Button>
-    )
-  }
-}
-
-@observer
 export class Demo extends React.Component {
   @observable renderActiveTabPanelOnly = true
 
@@ -68,6 +49,7 @@ export class Demo extends React.Component {
     return (
       <div style={{ marginTop: 20 }}>
         <ValidationDisplay context={context} />
+        <div />
         <div
           style={{
             display: "flex",
@@ -85,7 +67,9 @@ export class Demo extends React.Component {
             }
           />
           <div style={{ flexGrow: 5 }} />
-          <ValidationButton />
+          <button className="pt-button" onClick={() => context.validateAll()}>
+            validate
+          </button>
         </div>
         <pt.Tabs
           id="SampleTabs"
@@ -185,6 +169,7 @@ export class Demo extends React.Component {
                 )}
                 description={
                   <div>
+                    {pt.Intent.WARNING}
                     If we swap the order of the last sample, the validation
                     happens immediately again, but the upstream write is still
                     deferred until focus loss.
@@ -294,21 +279,17 @@ export class Demo extends React.Component {
               <StringWorkbench
                 context={context}
                 definition={defineBinding("", source =>
-                  source
-                    .validateAsync(notFooAsync)
-                    .throttle(1000)
-                    .validate(nonEmpty)
+                  source.validateAsync(notFooAsync)
                 )}
                 description={
                   <div>
-                    The sample `notFooAsync` validator mimics a server request
-                    that realizes after a second that the name <em>foo</em> is
+                    The `notFooAsync` validator mimics a server request that
+                    realizes after a second that the name <em>foo</em> is
                     already taken.
                   </div>
                 }
                 code={`ctx.bind(model, "value")
-  .validateAsync(notFooAsync)
-  .validate(nonEmpty)`}
+  .validate(notFooAsync)`}
               />
             }
           />
