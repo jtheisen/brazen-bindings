@@ -70,14 +70,6 @@ export class BindingContext {
     }
   }
 
-  bind<M, P extends keyof M>(model: M, prop: P): BindingBuilder<M[P]> {
-    return new BindingBuilder(new PropertyBinding<M, P>(this, model, prop))
-  }
-
-  trivial<T>(value: BindingValue<T>) {
-    return new BindingBuilder(new TrivialBinding(this, value))
-  }
-
   onSeek(): boolean {
     if (this.options && this.options.onSeek && this.options.onSeek()) {
       return true
@@ -89,6 +81,7 @@ export class BindingContext {
   }
 
   register(binding: IBinding) {
+    binding.context = this
     const i = this.bindings.indexOf(binding)
     if (i >= 0) throw Error("Binding already in context.")
     this.bindings.push(binding)
@@ -104,33 +97,33 @@ export class BindingContext {
     const i = this.bindings.indexOf(binding)
     if (i < 0) throw Error("No such binding in context.")
     this.bindings.splice(i, 1)
+    binding.context = undefined
   }
 }
 
-export abstract class BindingProvider<T> {
-  abstract getBinding(): Binding<T>
+export type BindingProvider<T> =
+  | IBindingProvider<T>
+  | ((binder: Binder) => BindingBuilder<T>)
+
+export function getBinding<T>(binding: BindingProvider<T>) {
+  if (typeof binding === "function") {
+    return binding(new Binder()).getBinding()
+  } else {
+    return binding.getBinding()
+  }
 }
 
-export abstract class Binding<T> extends BindingProvider<T>
-  implements IBinding {
-  constructor(public context: BindingContext) {
-    super()
-  }
+export interface IBindingProvider<T> {
+  getBinding(): Binding<T>
+}
 
+export abstract class Binding<T> implements IBindingProvider<T>, IBinding {
   abstract push(value: BindingValue<T>): void
   abstract peek(): BindingValue<T>
 
   onFocus() {}
 
   onBlur() {}
-
-  open() {
-    this.context.register(this)
-  }
-
-  close() {
-    this.context.unregister(this)
-  }
 
   protected validate() {
     this.push(this.peek())
@@ -141,21 +134,9 @@ export abstract class Binding<T> extends BindingProvider<T>
   }
 }
 
-class TrivialBinding<T> extends Binding<T> {
-  constructor(context: BindingContext, private value: BindingValue<T>) {
-    super(context)
-  }
-
-  push() {}
-
-  peek() {
-    return this.value
-  }
-}
-
 class PropertyBinding<M, P extends keyof M> extends Binding<M[P]> {
-  constructor(context: BindingContext, private model: M, private prop: P) {
-    super(context)
+  constructor(private model: M, private prop: P) {
+    super()
   }
 
   push(value: BindingValue<M[P]>) {
@@ -169,7 +150,7 @@ class PropertyBinding<M, P extends keyof M> extends Binding<M[P]> {
 
 abstract class GeneralNestedBinding<S, T> extends Binding<T> {
   constructor(private nested: Binding<S>) {
-    super(nested.context)
+    super()
 
     reaction(() => this.nestedPeek(), v => this.update(v))
   }
@@ -431,21 +412,29 @@ class InitialValidationBinding<T> extends NestedBinding<T> {
   }
 }
 
-export class BindingBuilder<T> extends BindingProvider<T> {
-  constructor(private binding: Binding<T>) {
-    super()
+export class Binder {
+  bind<M, P extends keyof M>(model: M, prop: P) {
+    return new BindingBuilder(new PropertyBinding(model, prop))
   }
+}
+
+export function bind<M, P extends keyof M>(model: M, prop: P) {
+  return new BindingBuilder(new PropertyBinding(model, prop))
+}
+
+export class BindingBuilder<T> implements IBindingProvider<T> {
+  constructor(private binding: Binding<T>) {}
 
   getBinding() {
     return this.binding
   }
 
   buffer() {
-    return new BindingBuilder<T>(new BufferBinding(this.binding))
+    return new BindingBuilder(new BufferBinding(this.binding))
   }
 
   defer() {
-    return new BindingBuilder<T>(new DeferringBinding(this.binding))
+    return new BindingBuilder(new DeferringBinding(this.binding))
   }
 
   convert<T2>(converter: Converter<T2, T>) {

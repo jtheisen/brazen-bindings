@@ -1,6 +1,6 @@
 import * as React from "react"
 import { BoundInputGroup, Rendering } from "./demo-components"
-import { BindingContext } from "../brazen-bindings/bindings"
+import { BindingContext, bind } from "../brazen-bindings/bindings"
 import { observable } from "mobx"
 import * as pt from "@blueprintjs/core"
 
@@ -15,8 +15,7 @@ export class InputGroupDemo extends React.Component<{
         <div style={{ width: 250 }}>
           <pt.FormGroup label="Edit value">
             <BoundInputGroup
-              binding={this.props.context
-                .bind(this, "value")
+              binding={bind(this, "value")
                 .validate(
                   "value should not be empty",
                   s => s && s.trim() !== ""

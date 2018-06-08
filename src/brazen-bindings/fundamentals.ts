@@ -32,7 +32,7 @@ export abstract class AsyncValidator<T> {
 }
 
 export interface IBinding {
-  context: BindingContext
+  context?: BindingContext
 
   push(value: BindingValue<any>): void
   peek(): BindingValue<any>

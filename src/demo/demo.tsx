@@ -121,7 +121,6 @@ export class Demo extends React.Component {
           />
           {this.makeTab("immediate", ctx => (
             <StringWorkbench
-              context={ctx}
               definition={defineBinding("", source =>
                 source.validate(nonEmpty)
               )}
@@ -137,7 +136,6 @@ export class Demo extends React.Component {
           ))}
           {this.makeTab("barred", ctx => (
             <StringWorkbench
-              context={ctx}
               definition={defineBinding("", source =>
                 source.bar().validate(nonEmpty)
               )}
@@ -154,7 +152,6 @@ export class Demo extends React.Component {
           ))}
           {this.makeTab("deferred", ctx => (
             <StringWorkbench
-              context={ctx}
               definition={defineBinding("", source =>
                 source.validate(nonEmpty).defer()
               )}
@@ -171,7 +168,6 @@ export class Demo extends React.Component {
           ))}
           {this.makeTab("hybrid", ctx => (
             <StringWorkbench
-              context={ctx}
               definition={defineBinding("", source =>
                 source.defer().validate(nonEmpty)
               )}
@@ -190,7 +186,6 @@ export class Demo extends React.Component {
           ))}
           {this.makeTab("initially invalid", ctx => (
             <StringWorkbench
-              context={ctx}
               definition={defineBinding("", source =>
                 source.validate(nonEmpty).validateInitially()
               )}
@@ -208,7 +203,6 @@ export class Demo extends React.Component {
           ))}
           {this.makeTab("number", ctx => (
             <NumberWorkbench
-              context={ctx}
               definition={defineBinding(42, source =>
                 source.convert(floatConverter)
               )}
@@ -231,7 +225,6 @@ export class Demo extends React.Component {
           />
           {this.makeTab("fix", ctx => (
             <StringWorkbench
-              context={ctx}
               definition={defineBinding("", source =>
                 source.fix(s => s.toUpperCase())
               )}
@@ -251,7 +244,6 @@ export class Demo extends React.Component {
             children="throttle"
             panel={
               <StringWorkbench
-                context={ctx}
                 definition={defineBinding("", source => source.throttle(1000))}
                 description={
                   <div>
@@ -271,7 +263,6 @@ export class Demo extends React.Component {
             children="async"
             panel={
               <StringWorkbench
-                context={ctx}
                 definition={defineBinding("", source =>
                   source.validateAsync(notFooAsync)
                 )}
@@ -289,7 +280,6 @@ export class Demo extends React.Component {
           /> */}
           {this.makeTab("complex", ctx => (
             <StringWorkbench
-              context={ctx}
               definition={defineBinding("x", source =>
                 source
                   .bar()
@@ -311,7 +301,6 @@ export class Demo extends React.Component {
           ))}
           {this.makeTab("overloads", ctx => (
             <StringWorkbench
-              context={ctx}
               definition={defineBinding("shouldnot1", source =>
                 source
                   .bar()

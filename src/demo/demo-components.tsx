@@ -3,14 +3,14 @@ import { observable } from "mobx"
 import { observer } from "mobx-react"
 import * as classnames from "classnames"
 import {
+  Binding,
   BindingBuilder,
-  BindingContext,
   BindingErrorLevel,
   BoundInput,
-  BindingProvider,
   BoundComponent
 } from "../brazen-bindings"
 import * as pt from "@blueprintjs/core"
+import { Binder, IBindingProvider } from "../brazen-bindings/bindings"
 
 @observer
 export class Rendering extends React.Component<{
@@ -23,15 +23,18 @@ export class Rendering extends React.Component<{
 
 interface IBoundInputProps<T> {
   label?: string
-  binding: BindingProvider<T>
+  binding: IBindingProvider<T>
   reset?: () => void
 }
 
 @observer
 @pt.HotkeysTarget
 export class MyInput extends React.Component<IBoundInputProps<string>> {
+  binding: Binding<string>
+
   constructor(props: IBoundInputProps<string>) {
     super(props)
+    this.binding = props.binding.getBinding()
   }
 
   getIntent(level: BindingErrorLevel) {
@@ -54,7 +57,7 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
   render() {
     console.info("my input renders")
 
-    const binding = this.props.binding.getBinding()
+    const binding = this.binding
     const error = binding.peek().error
     const intent = error ? this.getIntent(error.level) : pt.Intent.NONE
     const withPromise = error && error.promise && true
@@ -102,7 +105,6 @@ export class MyInput extends React.Component<IBoundInputProps<string>> {
 }
 
 export interface IWorkbenchProps<T> {
-  context: BindingContext
   definition: IBindingDefinitionWithDefault<T>
   description?: JSX.Element
   code?: string
@@ -173,7 +175,7 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
 
   makeBinding() {
     const result = this.props.definition.makeBinding(
-      this.props.context.bind(this, "loggedValue")
+      new Binder().bind(this, "loggedValue")
     )
     return result
   }
@@ -233,31 +235,38 @@ class InputGroupWithMessage extends React.Component<
   }
 }
 
+type BoundInputGroupProps = pt.IInputGroupProps &
+  HTMLInputProps & { binding: IBindingProvider<string> }
+
 @observer
-export class BoundInputGroup extends React.Component<
-  pt.IInputGroupProps & HTMLInputProps & { binding: BindingProvider<string> }
-> {
+export class BoundInputGroup extends React.Component<BoundInputGroupProps> {
   render() {
     const { binding, intent, ...rest } = this.props
-    const innerBinding = binding.getBinding()
+    const innerBinding = this.props.binding.getBinding()
     const poke = innerBinding.peek()
     const message = poke.error && poke.error.message
     const messageIcon = this.getIcon(poke.error && poke.error.level)
     const usedIntent = this.getIntent(poke.error && poke.error.level)
     return (
       <>
-        <BoundComponent binding={innerBinding} />
-        <InputGroupWithMessage
-          {...rest}
-          value={innerBinding.peek().value}
-          message={message}
-          messageIcon={messageIcon}
-          intent={usedIntent}
-          onChange={(e: any) =>
-            innerBinding.push({ value: e.currentTarget.value })
-          }
-          onBlur={() => innerBinding.onBlur()}
-          onFocus={() => innerBinding.onFocus()}
+        <BoundComponent
+          binding={this.props.binding}
+          render={() => {
+            return (
+              <InputGroupWithMessage
+                {...rest}
+                value={innerBinding.peek().value}
+                message={message}
+                messageIcon={messageIcon}
+                intent={usedIntent}
+                onChange={(e: any) =>
+                  innerBinding.push({ value: e.currentTarget.value })
+                }
+                onBlur={() => innerBinding.onBlur()}
+                onFocus={() => innerBinding.onFocus()}
+              />
+            )
+          }}
         />
       </>
     )

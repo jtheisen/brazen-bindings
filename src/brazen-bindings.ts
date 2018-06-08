@@ -8,6 +8,7 @@ export {
 } from "./brazen-bindings/fundamentals"
 
 export {
+  bind,
   Binding,
   BindingBuilder,
   BindingContext,
@@ -17,8 +18,7 @@ export {
 export {
   BoundComponent,
   BoundComponentProps,
-  BoundInput,
-  BoundInputProps
+  BoundInput
 } from "./brazen-bindings/bound-input"
 
 export { floatConverter } from "./brazen-bindings/conversions"

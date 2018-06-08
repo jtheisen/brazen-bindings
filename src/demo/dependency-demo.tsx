@@ -1,3 +1,4 @@
+import { bind } from "../brazen-bindings/bindings"
 import * as React from "react"
 import { observable } from "mobx"
 import { BindingContext } from "../brazen-bindings"
@@ -13,20 +14,15 @@ export class DependencyDemo extends React.Component<{
     return (
       <div className="workbench">
         <div>
-          <MyInput
-            label="Value 1"
-            binding={this.props.context.bind(this, "value1")}
-          />
+          <MyInput label="Value 1" binding={bind(this, "value1")} />
           <MyInput
             label="Value 2"
-            binding={this.props.context
-              .bind(this, "value2")
-              .validate(
-                v =>
-                  v.length > this.value1.length
-                    ? "value 2 must not be longer than value 1"
-                    : undefined
-              )}
+            binding={bind(this, "value2").validate(
+              v =>
+                v.length > this.value1.length
+                  ? "value 2 must not be longer than value 1"
+                  : undefined
+            )}
           />
           <Rendering render={() => <div>{this.value2}</div>} />
         </div>
