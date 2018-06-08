@@ -6,7 +6,7 @@ import {
 import * as React from "react"
 import { observable } from "mobx"
 import { observer } from "mobx-react"
-import { defineBinding, Workbench } from "./demo-components"
+import { defineBinding, Rendering, Workbench } from "./demo-components"
 import { DependencyDemo } from "./dependency-demo"
 import { makeValidator } from "../brazen-bindings/validators"
 import * as pt from "@blueprintjs/core"
@@ -103,168 +103,139 @@ export class Demo extends React.Component {
               </div>
             }
           />
-          <pt.Tab
-            id="immediate"
-            children="immediate"
-            panel={
-              <StringWorkbench
-                context={context}
-                definition={defineBinding("", source =>
-                  source.validate(nonEmpty)
-                )}
-                description={
-                  <div>
-                    The most simple case of validation. Everything is done
-                    immediately.
-                  </div>
-                }
-                code={`ctx.bind(model, "value")
+          {this.makeTab("immediate", ctx => (
+            <StringWorkbench
+              context={ctx}
+              definition={defineBinding("", source =>
+                source.validate(nonEmpty)
+              )}
+              description={
+                <div>
+                  The most simple case of validation. Everything is done
+                  immediately.
+                </div>
+              }
+              code={`ctx.bind(model, "value")
   .validate(nonEmpty)`}
-              />
-            }
-          />
-          <pt.Tab
-            id="bar"
-            children="barred"
-            panel={
-              <StringWorkbench
-                context={context}
-                definition={defineBinding("", source =>
-                  source.bar().validate(nonEmpty)
-                )}
-                description={
-                  <div>
-                    A <code>bar()</code> <em>before</em> validation prevents
-                    invalid values to be written to the upstream source.
-                  </div>
-                }
-                code={`ctx.bind(model, "value")
+            />
+          ))}
+          {this.makeTab("barred", ctx => (
+            <StringWorkbench
+              context={ctx}
+              definition={defineBinding("", source =>
+                source.bar().validate(nonEmpty)
+              )}
+              description={
+                <div>
+                  A <code>bar()</code> <em>before</em> validation prevents
+                  invalid values to be written to the upstream source.
+                </div>
+              }
+              code={`ctx.bind(model, "value")
   .bar()
   .validate(nonEmpty)`}
-              />
-            }
-          />
-          <pt.Tab
-            id="deferred"
-            children="deferred"
-            panel={
-              <StringWorkbench
-                context={context}
-                definition={defineBinding("", source =>
-                  source.validate(nonEmpty).defer()
-                )}
-                description={
-                  <div>
-                    A <code>defer()</code> <em>after</em> causes validation to
-                    happen on focus loss.
-                  </div>
-                }
-                code={`ctx.bind(model, "value")
+            />
+          ))}
+          {this.makeTab("deferred", ctx => (
+            <StringWorkbench
+              context={ctx}
+              definition={defineBinding("", source =>
+                source.validate(nonEmpty).defer()
+              )}
+              description={
+                <div>
+                  A <code>defer()</code> <em>after</em> causes validation to
+                  happen on focus loss.
+                </div>
+              }
+              code={`ctx.bind(model, "value")
   .validate(nonEmpty)
   .defer()`}
-              />
-            }
-          />
-          <pt.Tab
-            id="hybrid"
-            children="hybrid"
-            panel={
-              <StringWorkbench
-                context={context}
-                definition={defineBinding("", source =>
-                  source.defer().validate(nonEmpty)
-                )}
-                description={
-                  <div>
-                    {pt.Intent.WARNING}
-                    If we swap the order of the last sample, the validation
-                    happens immediately again, but the upstream write is still
-                    deferred until focus loss.
-                  </div>
-                }
-                code={`ctx.bind(model, "value")
+            />
+          ))}
+          {this.makeTab("hybrid", ctx => (
+            <StringWorkbench
+              context={ctx}
+              definition={defineBinding("", source =>
+                source.defer().validate(nonEmpty)
+              )}
+              description={
+                <div>
+                  {pt.Intent.WARNING}
+                  If we swap the order of the last sample, the validation
+                  happens immediately again, but the upstream write is still
+                  deferred until focus loss.
+                </div>
+              }
+              code={`ctx.bind(model, "value")
   .defer()
   .validate(nonEmpty)`}
-              />
-            }
-          />
-          <pt.Tab
-            id="initially-invalid"
-            children="initially invalid"
-            panel={
-              <StringWorkbench
-                context={context}
-                definition={defineBinding("", source =>
-                  source.validate(nonEmpty).validateInitially()
-                )}
-                description={
-                  <div>
-                    Ususally we dont want to validate the source without any
-                    prior user interaction, especially in the common case of
-                    validating against empty strings. But in some cases, it is
-                    desired.
-                  </div>
-                }
-                code={`ctx.bind(model, "value")
+            />
+          ))}
+          {this.makeTab("initially invalid", ctx => (
+            <StringWorkbench
+              context={ctx}
+              definition={defineBinding("", source =>
+                source.validate(nonEmpty).validateInitially()
+              )}
+              description={
+                <div>
+                  Ususally we dont want to validate the source without any prior
+                  user interaction, especially in the common case of validating
+                  against empty strings. But in some cases, it is desired.
+                </div>
+              }
+              code={`ctx.bind(model, "value")
   .validate(nonEmpty)
   .validateInitially()`}
-              />
-            }
-          />
-          <pt.Tab
-            id="numbers"
-            children="numbers"
-            panel={
-              <NumberWorkbench
-                context={context}
-                definition={defineBinding(42, source =>
-                  source.convert(floatConverter)
-                )}
-                description={
-                  <div>
-                    Conversion of data types, usually involving parsing, can
-                    fail is thus a special validation case. Unlike validation
-                    with <code>validate()</code>, a failed conversion can never
-                    update the upstream source.
-                  </div>
-                }
-                code={`ctx.bind(model, "value")
+            />
+          ))}
+          {this.makeTab("number", ctx => (
+            <NumberWorkbench
+              context={ctx}
+              definition={defineBinding(42, source =>
+                source.convert(floatConverter)
+              )}
+              description={
+                <div>
+                  Conversion of data types, usually involving parsing, can fail
+                  is thus a special validation case. Unlike validation with{" "}
+                  <code>validate()</code>, a failed conversion can never update
+                  the upstream source.
+                </div>
+              }
+              code={`ctx.bind(model, "value")
   .convert(floatConverter)`}
-              />
-            }
-          />
+            />
+          ))}
           <pt.Tab
             id="dependencies"
             children="dependencies"
             panel={<DependencyDemo context={context} />}
           />
-          <pt.Tab
-            id="fix"
-            children="fix"
-            panel={
-              <StringWorkbench
-                context={context}
-                definition={defineBinding("", source =>
-                  source.fix(s => s.toUpperCase())
-                )}
-                description={
-                  <div>
-                    Using a framework like this should not make us lose the
-                    ability for quick on-the-fly fixes. Throw in a{" "}
-                    <code>defer()</code> to make it happen only on focus loss.
-                  </div>
-                }
-                code={`ctx.bind(model, "value")
+          {this.makeTab("fix", ctx => (
+            <StringWorkbench
+              context={ctx}
+              definition={defineBinding("", source =>
+                source.fix(s => s.toUpperCase())
+              )}
+              description={
+                <div>
+                  Using a framework like this should not make us lose the
+                  ability for quick on-the-fly fixes. Throw in a{" "}
+                  <code>defer()</code> to make it happen only on focus loss.
+                </div>
+              }
+              code={`ctx.bind(model, "value")
   .fix(s => s.toUpperCase())`}
-              />
-            }
-          />
+            />
+          ))}
           {/* <pt.Tab
             id="throttle"
             children="throttle"
             panel={
               <StringWorkbench
-                context={context}
+                context={ctx}
                 definition={defineBinding("", source => source.throttle(1000))}
                 description={
                   <div>
@@ -284,7 +255,7 @@ export class Demo extends React.Component {
             children="async"
             panel={
               <StringWorkbench
-                context={context}
+                context={ctx}
                 definition={defineBinding("", source =>
                   source.validateAsync(notFooAsync)
                 )}
@@ -300,22 +271,19 @@ export class Demo extends React.Component {
               />
             }
           /> */}
-          <pt.Tab
-            id="complex"
-            children="complex"
-            panel={
-              <StringWorkbench
-                context={context}
-                definition={defineBinding("x", source =>
-                  source
-                    .bar()
-                    .validate(nonEmpty)
-                    .defer()
-                    .validate(s => (s === "x" ? "no x please" : undefined))
-                    .validateInitially()
-                )}
-                description={<div>This is the example from the teaser.</div>}
-                code={`ctx.bind(model, "value")
+          {this.makeTab("complex", ctx => (
+            <StringWorkbench
+              context={ctx}
+              definition={defineBinding("x", source =>
+                source
+                  .bar()
+                  .validate(nonEmpty)
+                  .defer()
+                  .validate(s => (s === "x" ? "no x please" : undefined))
+                  .validateInitially()
+              )}
+              description={<div>This is the example from the teaser.</div>}
+              code={`ctx.bind(model, "value")
   .bar()
   .validate(nonEmpty)
   .defer()
@@ -323,61 +291,95 @@ export class Demo extends React.Component {
     ? "no x please"
     : undefined)
   .validateInitially()`}
-              />
-            }
-          />
-          <pt.Tab
-            id="overloads"
-            children="overloads"
-            panel={
-              <StringWorkbench
-                context={context}
-                definition={defineBinding("mustnot1", source =>
-                  source
-                    .bar()
-                    .validate("Must not be mustnot1.", v => v !== "mustnot1")
-                    .validate(
-                      BindingErrorLevel.Warning,
-                      "Should not be shouldnot1.",
-                      v => v !== "shouldnot1"
+            />
+          ))}
+          {this.makeTab("overloads", ctx => (
+            <StringWorkbench
+              context={ctx}
+              definition={defineBinding("shouldnot1", source =>
+                source
+                  .bar()
+                  .validate("Must not be mustnot1.", v => v !== "mustnot1")
+                  .validate(
+                    BindingErrorLevel.Warning,
+                    "Should not be shouldnot1.",
+                    v => v !== "shouldnot1"
+                  )
+                  .validate(
+                    v => (v === "mustnot2" ? "Must not be mustnot2" : undefined)
+                  )
+                  .validate(
+                    BindingErrorLevel.Warning,
+                    v =>
+                      v === "shouldnot2" ? "Should not be mustnot2" : undefined
+                  )
+                  .validate(
+                    makeValidator(
+                      "Must not be mustnot3.",
+                      (v: string) => v !== "mustnot3"
                     )
-                    .validate(
-                      v =>
-                        v === "mustnot2" ? "Must not be mustnot2" : undefined
+                  )
+                  .validate(
+                    BindingErrorLevel.Warning,
+                    makeValidator(
+                      "Should not be shouldnot3.",
+                      v => v !== "shouldnot3"
                     )
-                    .validate(
-                      BindingErrorLevel.Warning,
-                      v =>
-                        v === "shouldnot2"
-                          ? "Should not be mustnot2"
-                          : undefined
-                    )
-                    .validate(
-                      makeValidator(
-                        "Must not be mustnot3.",
-                        (v: string) => v !== "mustnot3"
-                      )
-                    )
-                    .validate(
-                      BindingErrorLevel.Warning,
-                      makeValidator(
-                        "Should not be shouldnot3.",
-                        v => v !== "shouldnot3"
-                      )
-                    )
-                    .validateInitially()
-                )}
-                description={
-                  <div>
-                    The binding builder has a number of overloads for
-                    convenience.
-                  </div>
-                }
-              />
-            }
-          />
+                  )
+                  .validateInitially()
+              )}
+              description={
+                <div>
+                  The binding builder has a number of overloads for convenience.
+                </div>
+              }
+            />
+          ))}
         </pt.Tabs>
       </div>
     )
+  }
+
+  makeTab(name: string, panel: (ctx: BindingContext) => JSX.Element) {
+    const nestedContext = new BindingContext(context)
+
+    const renderLevelWarning = () => {
+      const level = nestedContext.maxErrorLevel
+
+      const style = { margin: 6 }
+
+      switch (level) {
+        case BindingErrorLevel.Error:
+          return (
+            <pt.Icon
+              style={style}
+              icon={IconNames.WARNING_SIGN}
+              intent={pt.Intent.DANGER}
+            />
+          )
+        case BindingErrorLevel.Warning:
+          return (
+            <pt.Icon
+              style={style}
+              icon={IconNames.WARNING_SIGN}
+              intent={pt.Intent.WARNING}
+            />
+          )
+        default:
+          return false
+      }
+    }
+
+    const rendering = (
+      <Rendering
+        render={() => (
+          <span>
+            {name} {renderLevelWarning()}
+          </span>
+        )}
+      />
+    )
+
+    return <pt.Tab id={name} title={rendering} panel={panel(nestedContext)} />
   }
 }
