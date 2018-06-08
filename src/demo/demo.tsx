@@ -15,15 +15,15 @@ function nonEmpty(value: string) {
   return value.trim() ? undefined : "value should not be empty"
 }
 
-function delay(millis: number) {
-  return new Promise<void>((resolve, reject) => setTimeout(resolve, millis))
-}
+// function delay(millis: number) {
+//   return new Promise<void>((resolve, reject) => setTimeout(resolve, millis))
+// }
 
-async function notFooAsync(value: string): Promise<string | undefined> {
-  console.info("notFooAsync fake request")
-  await delay(1000)
-  return value.trim() !== "foo" ? undefined : "foo already taken"
-}
+// async function notFooAsync(value: string): Promise<string | undefined> {
+//   console.info("notFooAsync fake request")
+//   await delay(1000)
+//   return value.trim() !== "foo" ? undefined : "foo already taken"
+// }
 
 @observer
 class ValidationDisplay extends React.Component<{ context: BindingContext }> {
@@ -252,7 +252,7 @@ export class Demo extends React.Component {
               />
             }
           />
-          <pt.Tab
+          {/* <pt.Tab
             id="throttle"
             children="throttle"
             panel={
@@ -271,8 +271,8 @@ export class Demo extends React.Component {
   .throttle(1000)`}
               />
             }
-          />
-          <pt.Tab
+          /> */}
+          {/* <pt.Tab
             id="async"
             children="async"
             panel={
@@ -292,7 +292,7 @@ export class Demo extends React.Component {
   .validate(notFooAsync)`}
               />
             }
-          />
+          /> */}
           <pt.Tab
             id="complex"
             children="complex"

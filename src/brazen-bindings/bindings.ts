@@ -258,45 +258,46 @@ class ValidationBinding<T> extends BufferBinding<T> {
   }
 }
 
-class AsyncValidationBinding<T> extends BufferBinding<T> {
-  currentPromise?: Promise<any>
+// async validation doesn't work properly yet
+// class AsyncValidationBinding<T> extends BufferBinding<T> {
+//   currentPromise?: Promise<any>
 
-  constructor(
-    nested: Binding<T>,
-    private validator: (value: T) => Promise<ValidationResult>,
-    private level: BindingErrorLevel = BindingErrorLevel.Error
-  ) {
-    super(nested)
-  }
+//   constructor(
+//     nested: Binding<T>,
+//     private validator: (value: T) => Promise<ValidationResult>,
+//     private level: BindingErrorLevel = BindingErrorLevel.Error
+//   ) {
+//     super(nested)
+//   }
 
-  protected update(value: BindingValue<T>) {
-    this.updateAsync(value)
-    const valueWithCaveat = {
-      value: value.value,
-      error: {
-        level: BindingErrorLevel.None,
-        message: "validating...",
-        promise: this.currentPromise
-      }
-    }
-    super.update(valueWithCaveat)
-  }
+//   protected update(value: BindingValue<T>) {
+//     this.updateAsync(value)
+//     const valueWithCaveat = {
+//       value: value.value,
+//       error: {
+//         level: BindingErrorLevel.None,
+//         message: "validating...",
+//         promise: this.currentPromise
+//       }
+//     }
+//     super.update(valueWithCaveat)
+//   }
 
-  private async updateAsync(value: BindingValue<T>) {
-    const promise = (this.currentPromise = this.validator(value.value))
-    const errorOrNot = await promise
-    if (this.currentPromise === promise) {
-      super.update(
-        errorOrNot
-          ? {
-              error: { level: this.level, message: errorOrNot },
-              value: value.value
-            }
-          : value
-      )
-    }
-  }
-}
+//   private async updateAsync(value: BindingValue<T>) {
+//     const promise = (this.currentPromise = this.validator(value.value))
+//     const errorOrNot = await promise
+//     if (this.currentPromise === promise) {
+//       super.update(
+//         errorOrNot
+//           ? {
+//               error: { level: this.level, message: errorOrNot },
+//               value: value.value
+//             }
+//           : value
+//       )
+//     }
+//   }
+// }
 
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   @observable private buffer: BindingValue<T>
@@ -339,35 +340,35 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   }
 }
 
-class ThrottleBinding<T> extends NestedBinding<T> {
-  pendingValue?: BindingValue<T>
+// class ThrottleBinding<T> extends NestedBinding<T> {
+//   pendingValue?: BindingValue<T>
 
-  constructor(nested: Binding<T>, private millis: number) {
-    super(nested)
-  }
+//   constructor(nested: Binding<T>, private millis: number) {
+//     super(nested)
+//   }
 
-  push(value: BindingValue<T>) {
-    this.pendingValue = value
-    setTimeout(() => {
-      if (this.pendingValue === value) this.flush()
-    }, this.millis)
-  }
+//   push(value: BindingValue<T>) {
+//     this.pendingValue = value
+//     setTimeout(() => {
+//       if (this.pendingValue === value) this.flush()
+//     }, this.millis)
+//   }
 
-  onBlur() {
-    this.flush()
-  }
+//   onBlur() {
+//     this.flush()
+//   }
 
-  flush() {
-    if (this.pendingValue) {
-      super.push(this.pendingValue)
-      this.pendingValue = undefined
-    }
-  }
+//   flush() {
+//     if (this.pendingValue) {
+//       super.push(this.pendingValue)
+//       this.pendingValue = undefined
+//     }
+//   }
 
-  protected update(value: BindingValue<T>) {
-    this.pendingValue = undefined
-  }
-}
+//   protected update(value: BindingValue<T>) {
+//     this.pendingValue = undefined
+//   }
+// }
 
 class InitialValidationBinding<T> extends NestedBinding<T> {
   private hadOnce = false
@@ -423,17 +424,17 @@ export class BindingBuilder<T> extends BindingProvider<T> {
     return new BindingBuilder(new ValidationBinding(this.binding, validate))
   }
 
-  validateAsync(validate: (value: T) => Promise<ValidationResult>) {
-    return new BindingBuilder(
-      new AsyncValidationBinding(this.binding, validate)
-    )
-  }
+  // validateAsync(validate: (value: T) => Promise<ValidationResult>) {
+  //   return new BindingBuilder(
+  //     new AsyncValidationBinding(this.binding, validate)
+  //   )
+  // }
 
-  throttle(millis: number) {
-    return new BindingBuilder(
-      new ThrottleBinding(this.binding, millis)
-    ).buffer()
-  }
+  // throttle(millis: number) {
+  //   return new BindingBuilder(
+  //     new ThrottleBinding(this.binding, millis)
+  //   ).buffer()
+  // }
 
   validateInitially() {
     return new BindingBuilder(
