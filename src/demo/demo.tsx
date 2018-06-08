@@ -22,19 +22,30 @@ function nonEmpty(value: string) {
 }
 
 @observer
-class ValidationDisplay extends React.Component<{ context: BindingContext }> {
+class ValidationDisplay extends React.Component<{
+  context: BindingContext
+  onClick: () => any
+}> {
   render() {
     const level = this.props.context.maxErrorLevel
     switch (level) {
       case BindingErrorLevel.Error:
         return (
-          <pt.Callout intent={pt.Intent.DANGER} icon={IconNames.WARNING_SIGN}>
+          <pt.Callout
+            intent={pt.Intent.DANGER}
+            icon={IconNames.WARNING_SIGN}
+            onClick={this.props.onClick}
+          >
             There are some serious issues.
           </pt.Callout>
         )
       case BindingErrorLevel.Warning:
         return (
-          <pt.Callout intent={pt.Intent.WARNING} icon={IconNames.WARNING_SIGN}>
+          <pt.Callout
+            intent={pt.Intent.WARNING}
+            icon={IconNames.WARNING_SIGN}
+            onClick={this.props.onClick}
+          >
             There are some warnings.
           </pt.Callout>
         )
@@ -52,10 +63,12 @@ class ValidationDisplay extends React.Component<{ context: BindingContext }> {
 export class Demo extends React.Component {
   @observable renderActiveTabPanelOnly = true
 
+  @observable selectedTabId: string | number = "readme"
+
   public render() {
     return (
       <div style={{ marginTop: 20 }}>
-        <ValidationDisplay context={context} />
+        <ValidationDisplay context={context} onClick={() => context.seek()} />
         <div />
         <div
           style={{
@@ -80,6 +93,8 @@ export class Demo extends React.Component {
         </div>
         <pt.Tabs
           id="SampleTabs"
+          selectedTabId={this.selectedTabId}
+          onChange={id => (this.selectedTabId = id)}
           vertical={true}
           renderActiveTabPanelOnly={this.renderActiveTabPanelOnly}
         >
@@ -341,7 +356,12 @@ export class Demo extends React.Component {
   }
 
   makeTab(name: string, panel: (ctx: BindingContext) => JSX.Element) {
-    const nestedContext = new BindingContext(context)
+    const nestedContext = new BindingContext({
+      parent: context,
+      onSeek: () => {
+        this.selectedTabId = name
+      }
+    })
 
     const renderLevelWarning = () => {
       const level = nestedContext.maxErrorLevel

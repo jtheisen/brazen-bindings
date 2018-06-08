@@ -9,10 +9,16 @@ import {
 import { observable, reaction, computed } from "mobx"
 import { Converter, ConversionResult } from "./conversions"
 import { makeValidator } from "./validators"
+
+export interface BindingContextOptions {
+  parent?: BindingContext
+  onSeek?: () => any
+}
+
 export class BindingContext {
   @observable private bindings: IBinding[] = []
 
-  constructor(private parent?: BindingContext) {}
+  constructor(private options?: BindingContextOptions) {}
 
   @computed
   get maxErrorLevel() {
@@ -22,6 +28,14 @@ export class BindingContext {
         return error ? error.level : BindingErrorLevel.None
       })
       .reduce((p, c) => Math.max(p, c), BindingErrorLevel.None)
+  }
+
+  get maxErrorLevelBindings() {
+    const level = this.maxErrorLevel
+    return this.bindings.filter(b => {
+      const error = b.peek().error
+      return error && error.level === level
+    })
   }
 
   @computed
@@ -44,6 +58,18 @@ export class BindingContext {
     await Promise.all(promises)
   }
 
+  seek() {
+    const binding = this.maxErrorLevelBindings[0]
+
+    const nestedContext = binding && binding.context
+
+    if (nestedContext && nestedContext.maxErrorLevel > BindingErrorLevel.None) {
+      return nestedContext.onSeek()
+    } else {
+      return false
+    }
+  }
+
   bind<M, P extends keyof M>(model: M, prop: P): BindingBuilder<M[P]> {
     return new BindingBuilder(new PropertyBinding<M, P>(this, model, prop))
   }
@@ -52,15 +78,29 @@ export class BindingContext {
     return new BindingBuilder(new TrivialBinding(this, value))
   }
 
+  onSeek(): boolean {
+    if (this.options && this.options.onSeek && this.options.onSeek()) {
+      return true
+    } else if (this.options && this.options.parent) {
+      return this.options.parent.onSeek()
+    } else {
+      return false
+    }
+  }
+
   register(binding: IBinding) {
     const i = this.bindings.indexOf(binding)
     if (i >= 0) throw Error("Binding already in context.")
     this.bindings.push(binding)
-    if (this.parent) this.parent.register(binding)
+    if (this.options && this.options.parent) {
+      this.options.parent.register(binding)
+    }
   }
 
   unregister(binding: IBinding) {
-    if (this.parent) this.parent.unregister(binding)
+    if (this.options && this.options.parent) {
+      this.options.parent.unregister(binding)
+    }
     const i = this.bindings.indexOf(binding)
     if (i < 0) throw Error("No such binding in context.")
     this.bindings.splice(i, 1)

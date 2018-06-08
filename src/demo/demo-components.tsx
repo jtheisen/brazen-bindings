@@ -107,7 +107,6 @@ export interface IWorkbenchProps<T> {
   code?: string
 }
 
-@observer
 export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
   @observable value: T
 
