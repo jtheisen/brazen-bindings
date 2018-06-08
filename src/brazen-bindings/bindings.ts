@@ -422,25 +422,68 @@ export class BindingBuilder<T> extends BindingProvider<T> {
     return new BindingBuilder(new FixBinding(this.binding, fix))
   }
 
+  validate(validator: Validator<T>): BindingBuilder<T>
   validate(message: string, validator: (value: T) => boolean): BindingBuilder<T>
   validate(validator: (value: T) => ValidationResult): BindingBuilder<T>
+  validate(level: BindingErrorLevel, validator: Validator<T>): BindingBuilder<T>
   validate(
-    validatorOrMessage:
+    level: BindingErrorLevel,
+    message: string,
+    validator: (value: T) => boolean
+  ): BindingBuilder<T>
+  validate(
+    level: BindingErrorLevel,
+    validator: (value: T) => ValidationResult
+  ): BindingBuilder<T>
+  validate(
+    firstArgument:
+      | BindingErrorLevel
       | string
       | ((value: T) => ValidationResult)
       | Validator<T>,
-    validatorOrUndefined?: (value: T) => boolean
+    secondArgument?:
+      | string
+      | ((value: T) => ValidationResult)
+      | ((value: T) => boolean)
+      | Validator<T>,
+    thirdArgument?: (value: T) => boolean
   ) {
-    if (typeof validatorOrMessage === "string") {
-      makeValidator(validatorOrMessage, validatorOrUndefined!)
-      return undefined
-    } else if (validatorOrMessage instanceof Validator) {
+    if (typeof firstArgument === "number") {
+      if (typeof secondArgument === "string") {
+        return new BindingBuilder(
+          new ValidationBinding(
+            this.binding,
+            makeValidator(secondArgument, thirdArgument as (
+              value: T
+            ) => boolean)
+          )
+        )
+      } else if (secondArgument instanceof Validator) {
+        return new BindingBuilder(
+          new ValidationBinding(this.binding, secondArgument)
+        )
+      } else {
+        return new BindingBuilder(
+          new ValidationBinding(
+            this.binding,
+            makeValidator(secondArgument as ((value: T) => ValidationResult))
+          )
+        )
+      }
+    } else if (typeof firstArgument === "string") {
       return new BindingBuilder(
-        new ValidationBinding(this.binding, validatorOrMessage)
+        new ValidationBinding(
+          this.binding,
+          makeValidator(firstArgument, secondArgument as (value: T) => boolean)
+        )
+      )
+    } else if (firstArgument instanceof Validator) {
+      return new BindingBuilder(
+        new ValidationBinding(this.binding, firstArgument)
       )
     } else {
       return new BindingBuilder(
-        new ValidationBinding(this.binding, makeValidator(validatorOrMessage))
+        new ValidationBinding(this.binding, makeValidator(firstArgument))
       )
     }
   }

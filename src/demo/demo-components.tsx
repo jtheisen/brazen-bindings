@@ -154,9 +154,11 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
           </label>
         </div>
         <div>
-          <pre>
-            <code>{this.props.code}</code>
-          </pre>
+          {this.props.code && (
+            <pre>
+              <code>{this.props.code}</code>
+            </pre>
+          )}
         </div>
         <div>
           <blockquote>{this.props.description}</blockquote>

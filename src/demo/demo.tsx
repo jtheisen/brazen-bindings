@@ -1,10 +1,15 @@
-import { BindingContext, floatConverter } from "../brazen-bindings"
+import {
+  BindingContext,
+  floatConverter,
+  BindingErrorLevel
+} from "../brazen-bindings"
 import * as React from "react"
 import { observable } from "mobx"
 import { observer } from "mobx-react"
 import { defineBinding, Workbench } from "./demo-components"
 import { DependencyDemo } from "./dependency-demo"
 import * as pt from "@blueprintjs/core"
+import { makeValidator } from "../brazen-bindings/validators"
 
 const context = new BindingContext()
 
@@ -316,6 +321,56 @@ export class Demo extends React.Component {
     ? "no x please"
     : undefined)
   .validateInitially()`}
+              />
+            }
+          />
+          <pt.Tab
+            id="overloads"
+            children="overloads"
+            panel={
+              <StringWorkbench
+                context={context}
+                definition={defineBinding("mustnot1", source =>
+                  source
+                    .bar()
+                    .validate("Must not be mustnot1.", v => v !== "mustnot1")
+                    .validate(
+                      BindingErrorLevel.Warning,
+                      "Should not be shouldnot1.",
+                      v => v !== "shouldnot1"
+                    )
+                    .validate(
+                      v =>
+                        v === "mustnot2" ? "Must not be mustnot2" : undefined
+                    )
+                    .validate(
+                      BindingErrorLevel.Warning,
+                      v =>
+                        v === "shouldnot2"
+                          ? "Should not be mustnot2"
+                          : undefined
+                    )
+                    .validate(
+                      makeValidator(
+                        "Must not be mustnot3.",
+                        (v: string) => v !== "mustnot3"
+                      )
+                    )
+                    .validate(
+                      BindingErrorLevel.Warning,
+                      makeValidator(
+                        "Should not be shouldnot3.",
+                        v => v !== "shouldnot3"
+                      )
+                    )
+                    .validateInitially()
+                )}
+                description={
+                  <div>
+                    The binding builder has a number of overloads for
+                    convenience.
+                  </div>
+                }
               />
             }
           />

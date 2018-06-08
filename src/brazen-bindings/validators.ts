@@ -3,6 +3,7 @@ import { Validator, ValidationResult } from "./fundamentals"
 export class ConcreteValidator<T> extends Validator<T> {
   constructor(private validator: (value: T) => ValidationResult) {
     super()
+    if (typeof validator !== "function") throw Error("function expected")
   }
 
   validate(value: T) {
@@ -31,6 +32,9 @@ export class ConcreteConstantMessageValidator<
 
   constructor(protected message: string, isValid: (value: T) => boolean) {
     super()
+    this.isValidImpl = isValid
+    if (typeof message !== "string") throw Error("string expected")
+    if (typeof isValid !== "function") throw Error("function expected")
   }
 }
 
