@@ -1,12 +1,14 @@
 import {
-  IBinding,
-  BindingValue,
   BindingError,
   BindingErrorLevel,
-  ValidationResult
+  BindingValue,
+  IBinding,
+  ValidationResult,
+  Validator
 } from "./fundamentals"
 import { observable, reaction, computed } from "mobx"
 import { Converter, ConversionResult } from "./conversions"
+import { makeValidator } from "./validators"
 export class BindingContext {
   @observable private bindings: IBinding[] = []
 
@@ -225,7 +227,7 @@ class DeferringBinding<T> extends BufferBinding<T> {
 class ValidationBinding<T> extends BufferBinding<T> {
   constructor(
     nested: Binding<T>,
-    private validator: (value: T) => ValidationResult,
+    private validator: Validator<T>,
     private level: BindingErrorLevel = BindingErrorLevel.Error
   ) {
     super(nested)
@@ -248,7 +250,7 @@ class ValidationBinding<T> extends BufferBinding<T> {
   }
 
   private getValidated(value: BindingValue<T>): BindingValue<T> {
-    const errorOrNot = this.validator(value.value)
+    const errorOrNot = this.validator.validate(value.value)
     return errorOrNot
       ? {
           error: { level: this.level, message: errorOrNot },
@@ -420,8 +422,27 @@ export class BindingBuilder<T> extends BindingProvider<T> {
     return new BindingBuilder(new FixBinding(this.binding, fix))
   }
 
-  validate(validate: (value: T) => ValidationResult) {
-    return new BindingBuilder(new ValidationBinding(this.binding, validate))
+  validate(message: string, validator: (value: T) => boolean): BindingBuilder<T>
+  validate(validator: (value: T) => ValidationResult): BindingBuilder<T>
+  validate(
+    validatorOrMessage:
+      | string
+      | ((value: T) => ValidationResult)
+      | Validator<T>,
+    validatorOrUndefined?: (value: T) => boolean
+  ) {
+    if (typeof validatorOrMessage === "string") {
+      makeValidator(validatorOrMessage, validatorOrUndefined!)
+      return undefined
+    } else if (validatorOrMessage instanceof Validator) {
+      return new BindingBuilder(
+        new ValidationBinding(this.binding, validatorOrMessage)
+      )
+    } else {
+      return new BindingBuilder(
+        new ValidationBinding(this.binding, makeValidator(validatorOrMessage))
+      )
+    }
   }
 
   // validateAsync(validate: (value: T) => Promise<ValidationResult>) {

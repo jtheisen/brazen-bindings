@@ -1,4 +1,14 @@
-import { Validator } from "./fundamentals"
+import { Validator, ValidationResult } from "./fundamentals"
+
+export class ConcreteValidator<T> extends Validator<T> {
+  constructor(private validator: (value: T) => ValidationResult) {
+    super()
+  }
+
+  validate(value: T) {
+    return this.validator(value)
+  }
+}
 
 export abstract class ConstantMessageValidator<T> extends Validator<T> {
   protected abstract message: string
@@ -34,8 +44,22 @@ export class NotEmpty extends ConstantMessageValidator<
 }
 
 export function makeValidator<T>(
+  validate: (value: T) => ValidationResult
+): Validator<T>
+export function makeValidator<T>(
   message: string,
   validate: (value: T) => boolean
+): Validator<T>
+export function makeValidator<T>(
+  validatorOrMessage: string | ((value: T) => ValidationResult),
+  validatorOrUndefined?: (value: T) => boolean
 ) {
-  return new ConcreteConstantMessageValidator(message, validate)
+  if (typeof validatorOrMessage === "string") {
+    return new ConcreteConstantMessageValidator(
+      validatorOrMessage,
+      validatorOrUndefined!
+    )
+  } else {
+    return new ConcreteValidator(validatorOrMessage)
+  }
 }
