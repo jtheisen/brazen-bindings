@@ -9,6 +9,14 @@ body {
   min-width: 140px;
 }
 
+.pt-unbutton {
+  cursor: default !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
 .pt-callout:not(.pt-intent-success) {
   cursor: pointer;
 }
@@ -30,4 +38,5 @@ body {
 
 .workbench > *:nth-child(3) {
   flex-grow: 1;
+  max-width: 500px;
 }

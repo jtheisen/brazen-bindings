@@ -7,13 +7,14 @@ import {
   BindingContext,
   BindingErrorLevel,
   BoundInput,
-  BindingProvider
+  BindingProvider,
+  BoundComponent
 } from "../brazen-bindings"
 import * as pt from "@blueprintjs/core"
 
 @observer
 export class Rendering extends React.Component<{
-  render: () => JSX.Element | null | false
+  render: () => JSX.Element | string | null | false
 }> {
   render() {
     return this.props.render()
@@ -188,4 +189,100 @@ export function defineBinding<T>(
   makeBinding: (source: BindingBuilder<T>) => BindingBuilder<string>
 ) {
   return { def, makeBinding }
+}
+
+type HTMLInputProps = React.InputHTMLAttributes<HTMLInputElement>
+
+class InputGroupWithMessage extends React.Component<
+  pt.IInputGroupProps &
+    HTMLInputProps & {
+      messageIcon?: pt.IconName
+      message?: JSX.Element | string
+    }
+> {
+  render() {
+    const { message, rightElement, ...props } = this.props
+    const newRightElement = props.messageIcon
+      ? (([this.renderIconInTooltip(), rightElement] as any) as JSX.Element)
+      : rightElement
+    return <pt.InputGroup {...props} rightElement={newRightElement} />
+  }
+
+  renderIconInTooltip() {
+    return this.props.message ? (
+      <pt.Tooltip content={this.props.message} intent={this.props.intent}>
+        {this.renderIcon()}
+      </pt.Tooltip>
+    ) : (
+      this.renderIcon()
+    )
+  }
+
+  renderIcon() {
+    return (
+      <pt.Button className="pt-unbutton">
+        <pt.Icon
+          iconSize={
+            this.props.large ? pt.Icon.SIZE_LARGE : pt.Icon.SIZE_STANDARD
+          }
+          icon={this.props.messageIcon}
+          intent={this.props.intent}
+        />
+      </pt.Button>
+    )
+  }
+}
+
+@observer
+export class BoundInputGroup extends React.Component<
+  pt.IInputGroupProps & HTMLInputProps & { binding: BindingProvider<string> }
+> {
+  render() {
+    const { binding, intent, ...rest } = this.props
+    const innerBinding = binding.getBinding()
+    const poke = innerBinding.peek()
+    const message = poke.error && poke.error.message
+    const messageIcon = this.getIcon(poke.error && poke.error.level)
+    const usedIntent = this.getIntent(poke.error && poke.error.level)
+    return (
+      <>
+        <BoundComponent binding={innerBinding} />
+        <InputGroupWithMessage
+          {...rest}
+          value={innerBinding.peek().value}
+          message={message}
+          messageIcon={messageIcon}
+          intent={usedIntent}
+          onChange={(e: any) =>
+            innerBinding.push({ value: e.currentTarget.value })
+          }
+          onBlur={() => innerBinding.onBlur()}
+          onFocus={() => innerBinding.onFocus()}
+        />
+      </>
+    )
+  }
+
+  getIntent(level?: BindingErrorLevel) {
+    switch (level) {
+      case BindingErrorLevel.Fatal:
+      case BindingErrorLevel.Error:
+        return pt.Intent.DANGER
+      case BindingErrorLevel.Warning:
+        return pt.Intent.WARNING
+      default:
+        return undefined
+    }
+  }
+
+  getIcon(level?: BindingErrorLevel) {
+    switch (level) {
+      case BindingErrorLevel.Fatal:
+      case BindingErrorLevel.Error:
+      case BindingErrorLevel.Warning:
+        return "warning-sign"
+      default:
+        return undefined
+    }
+  }
 }

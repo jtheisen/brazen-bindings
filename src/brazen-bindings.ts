@@ -14,6 +14,11 @@ export {
   BindingProvider
 } from "./brazen-bindings/bindings"
 
-export { BoundInput } from "./brazen-bindings/bound-input"
+export {
+  BoundComponent,
+  BoundComponentProps,
+  BoundInput,
+  BoundInputProps
+} from "./brazen-bindings/bound-input"
 
 export { floatConverter } from "./brazen-bindings/conversions"

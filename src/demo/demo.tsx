@@ -11,6 +11,7 @@ import { DependencyDemo } from "./dependency-demo"
 import { makeValidator } from "../brazen-bindings/validators"
 import * as pt from "@blueprintjs/core"
 import { IconNames } from "@blueprintjs/icons"
+import { InputGroupDemo } from "./input-group-demo"
 
 const context = new BindingContext()
 
@@ -350,6 +351,7 @@ export class Demo extends React.Component {
               }
             />
           ))}
+          {this.makeTab("input group", ctx => <InputGroupDemo context={ctx} />)}
         </pt.Tabs>
       </div>
     )

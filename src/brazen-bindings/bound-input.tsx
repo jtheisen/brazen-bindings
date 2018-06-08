@@ -31,12 +31,12 @@ export class BoundComponent<T, P> extends React.Component<
   }
 }
 
-type InputProps = React.DetailedHTMLProps<
+export type BoundInputProps = React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
 >
 
-export class BoundInput extends BoundComponent<string, InputProps> {
+export class BoundInput extends BoundComponent<string, BoundInputProps> {
   render() {
     const { binding, ...rest } = this.props
     const innerBinding = binding.getBinding()
