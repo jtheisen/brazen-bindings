@@ -7,7 +7,6 @@ import {
 } from "./fundamentals"
 import { observable, reaction, computed } from "mobx"
 import { Converter, ConversionResult } from "./conversions"
-
 export class BindingContext {
   @observable private bindings: IBinding[] = []
 
@@ -163,7 +162,7 @@ class BufferBinding<T> extends NestedBinding<T> {
   @observable private buffer: BindingValue<T>
 
   // Laziness is critical so that binding construction doesn't subscribe.
-  hadInitialPeek = false
+  private hadInitialPeek = false
 
   constructor(nested: Binding<T>) {
     super(nested)
@@ -172,7 +171,6 @@ class BufferBinding<T> extends NestedBinding<T> {
   }
 
   push(value: BindingValue<T>) {
-    //this.update(value)
     super.push(value)
   }
 
@@ -266,7 +264,7 @@ class AsyncValidationBinding<T> extends BufferBinding<T> {
   constructor(
     nested: Binding<T>,
     private validator: (value: T) => Promise<ValidationResult>,
-    private level = BindingErrorLevel.Error
+    private level: BindingErrorLevel = BindingErrorLevel.Error
   ) {
     super(nested)
   }
@@ -304,7 +302,7 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   @observable private buffer: BindingValue<T>
 
   // Laziness is critical so that binding construction doesn't subscribe.
-  hadInitialPeek = false
+  private hadInitialPeek = false
 
   constructor(nested: Binding<S>, private converter: Converter<T, S>) {
     super(nested)
@@ -316,8 +314,7 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
     const result = this.converter.convert(value.value)
     const error = value.error || this.getBindingError(result)
     this.buffer = { value: value.value, error: error }
-    if (!(result instanceof Error))
-      super.nestedPush({ value: result })
+    if (!(result instanceof Error)) super.nestedPush({ value: result })
   }
 
   peek() {
@@ -333,7 +330,9 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
     this.buffer = { value: newValue, error: value.error }
   }
 
-  private getBindingError(result: ConversionResult<S>): BindingError | undefined {
+  private getBindingError(
+    result: ConversionResult<S>
+  ): BindingError | undefined {
     return result instanceof Error
       ? { message: result.message, level: BindingErrorLevel.Error }
       : undefined

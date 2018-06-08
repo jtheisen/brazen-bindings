@@ -2,15 +2,21 @@ import * as React from "react"
 import { observable } from "mobx"
 import { observer } from "mobx-react"
 import * as classnames from "classnames"
-import { BindingBuilder, BindingContext, BindingErrorLevel, BoundInput, BindingProvider } from "../brazen-bindings"
+import {
+  BindingBuilder,
+  BindingContext,
+  BindingErrorLevel,
+  BoundInput,
+  BindingProvider
+} from "../brazen-bindings"
 import * as pt from "@blueprintjs/core"
 
 @observer
-class Indirection extends React.Component<{
-  get: () => JSX.Element | null | false
+export class Rendering extends React.Component<{
+  render: () => JSX.Element | null | false
 }> {
   render() {
-    return this.props.get()
+    return this.props.render()
   }
 }
 
@@ -135,8 +141,8 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
           />
           <label className="pt-label pt-disabled">
             Source
-            <Indirection
-              get={() => (
+            <Rendering
+              render={() => (
                 <input
                   disabled={true}
                   className="pt-input"
@@ -164,8 +170,9 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
   }
 
   makeBinding() {
-    const result = this.props.definition
-      .makeBinding(this.props.context.bind(this, "loggedValue"))
+    const result = this.props.definition.makeBinding(
+      this.props.context.bind(this, "loggedValue")
+    )
     return result
   }
 }

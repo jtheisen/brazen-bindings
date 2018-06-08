@@ -3,8 +3,12 @@ import { BindingProvider } from "./bindings"
 
 export type BoundComponentProps<T, P> = { binding: BindingProvider<T> } & P
 
-export class BoundComponent<T, P> extends React.Component<BoundComponentProps<T, P>> {
-  get binding() { return this.props.binding.getBinding() }
+export class BoundComponent<T, P> extends React.Component<
+  BoundComponentProps<T, P>
+> {
+  get binding() {
+    return this.props.binding.getBinding()
+  }
 
   componentDidMount() {
     this.binding.open()
