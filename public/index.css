@@ -5,6 +5,10 @@ body {
   flex-grow: 1;
 }
 
+.pt-tab {
+  min-width: 140px;
+}
+
 .workbench {
   display: flex;
   flex-grow: 1;
