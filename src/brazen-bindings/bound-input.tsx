@@ -9,7 +9,7 @@ import {
 
 const globalBindingContext = new BindingContext()
 
-const { Provider, Consumer } = React.createContext<BindingContext>(
+export const reactBindingContext = React.createContext<BindingContext>(
   globalBindingContext
 )
 
@@ -17,7 +17,12 @@ export class BindingContextProvider extends React.Component {
   context = new BindingContext()
 
   render() {
-    return <Provider value={this.context}>{this.props.children}</Provider>
+    return (
+      <reactBindingContext.Provider
+        value={this.context}
+        children={this.props.children}
+      />
+    )
   }
 }
 
@@ -67,7 +72,7 @@ export class BoundComponent<T> extends React.Component<BoundComponentProps<T>> {
 
   render() {
     return (
-      <Consumer>
+      <reactBindingContext.Consumer>
         {context => (
           <BoundComponent2
             context={context}
@@ -75,7 +80,7 @@ export class BoundComponent<T> extends React.Component<BoundComponentProps<T>> {
             render={this.props.render}
           />
         )}
-      </Consumer>
+      </reactBindingContext.Consumer>
     )
   }
 }

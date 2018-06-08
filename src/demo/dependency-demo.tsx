@@ -1,12 +1,9 @@
 import { bind } from "../brazen-bindings/bindings"
 import * as React from "react"
 import { observable } from "mobx"
-import { BindingContext } from "../brazen-bindings"
 import { MyInput, Rendering } from "./demo-components"
 
-export class DependencyDemo extends React.Component<{
-  context: BindingContext
-}> {
+export class DependencyDemo extends React.Component<{}> {
   @observable value1 = ""
   @observable value2 = ""
 

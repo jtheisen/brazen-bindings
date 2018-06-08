@@ -1,12 +1,10 @@
 import * as React from "react"
 import { BoundInputGroup, Rendering } from "./demo-components"
-import { BindingContext, bind } from "../brazen-bindings/bindings"
+import { bind } from "../brazen-bindings/bindings"
 import { observable } from "mobx"
 import * as pt from "@blueprintjs/core"
 
-export class InputGroupDemo extends React.Component<{
-  context: BindingContext
-}> {
+export class InputGroupDemo extends React.Component {
   @observable value = ""
 
   render() {

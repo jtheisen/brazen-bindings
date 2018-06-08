@@ -1,7 +1,8 @@
 import {
   BindingContext,
   floatConverter,
-  BindingErrorLevel
+  BindingErrorLevel,
+  reactBindingContext
 } from "../brazen-bindings"
 import * as React from "react"
 import { observable } from "mobx"
@@ -12,8 +13,6 @@ import { makeValidator } from "../brazen-bindings/validators"
 import * as pt from "@blueprintjs/core"
 import { IconNames } from "@blueprintjs/icons"
 import { InputGroupDemo } from "./input-group-demo"
-
-const context = new BindingContext()
 
 const NumberWorkbench = Workbench.ofType<number>()
 const StringWorkbench = Workbench.ofType<string>()
@@ -69,29 +68,41 @@ export class Demo extends React.Component {
   public render() {
     return (
       <div style={{ marginTop: 20 }}>
-        <ValidationDisplay context={context} onClick={() => context.seek()} />
-        <div />
-        <div
-          style={{
-            display: "flex",
-            margin: "10px 0 10px 0",
-            paddingBottom: 5,
-            alignItems: "baseline",
-            borderBottom: "1px solid gray"
-          }}
-        >
-          <pt.Checkbox
-            label="Render active tab only"
-            checked={this.renderActiveTabPanelOnly}
-            onChange={e =>
-              (this.renderActiveTabPanelOnly = e.currentTarget.checked)
-            }
-          />
-          <div style={{ flexGrow: 5 }} />
-          <button className="pt-button" onClick={() => context.validateAll()}>
-            validate
-          </button>
-        </div>
+        <reactBindingContext.Consumer
+          children={context => (
+            <>
+              <ValidationDisplay
+                context={context}
+                onClick={() => context.seek()}
+              />
+              <div />
+              <div
+                style={{
+                  display: "flex",
+                  margin: "10px 0 10px 0",
+                  paddingBottom: 5,
+                  alignItems: "baseline",
+                  borderBottom: "1px solid gray"
+                }}
+              >
+                <pt.Checkbox
+                  label="Render active tab only"
+                  checked={this.renderActiveTabPanelOnly}
+                  onChange={e =>
+                    (this.renderActiveTabPanelOnly = e.currentTarget.checked)
+                  }
+                />
+                <div style={{ flexGrow: 5 }} />
+                <button
+                  className="pt-button"
+                  onClick={() => context.validateAll()}
+                >
+                  validate
+                </button>
+              </div>
+            </>
+          )}
+        />
         <pt.Tabs
           id="SampleTabs"
           selectedTabId={this.selectedTabId}
@@ -119,7 +130,7 @@ export class Demo extends React.Component {
               </div>
             }
           />
-          {this.makeTab("immediate", ctx => (
+          {this.makeTab("immediate", () => (
             <StringWorkbench
               definition={defineBinding("", source =>
                 source.validate(nonEmpty)
@@ -134,7 +145,7 @@ export class Demo extends React.Component {
   .validate(nonEmpty)`}
             />
           ))}
-          {this.makeTab("barred", ctx => (
+          {this.makeTab("barred", () => (
             <StringWorkbench
               definition={defineBinding("", source =>
                 source.bar().validate(nonEmpty)
@@ -150,7 +161,7 @@ export class Demo extends React.Component {
   .validate(nonEmpty)`}
             />
           ))}
-          {this.makeTab("deferred", ctx => (
+          {this.makeTab("deferred", () => (
             <StringWorkbench
               definition={defineBinding("", source =>
                 source.validate(nonEmpty).defer()
@@ -166,7 +177,7 @@ export class Demo extends React.Component {
   .defer()`}
             />
           ))}
-          {this.makeTab("hybrid", ctx => (
+          {this.makeTab("hybrid", () => (
             <StringWorkbench
               definition={defineBinding("", source =>
                 source.defer().validate(nonEmpty)
@@ -184,7 +195,7 @@ export class Demo extends React.Component {
   .validate(nonEmpty)`}
             />
           ))}
-          {this.makeTab("initially invalid", ctx => (
+          {this.makeTab("initially invalid", () => (
             <StringWorkbench
               definition={defineBinding("", source =>
                 source.validate(nonEmpty).validateInitially()
@@ -201,7 +212,7 @@ export class Demo extends React.Component {
   .validateInitially()`}
             />
           ))}
-          {this.makeTab("number", ctx => (
+          {this.makeTab("number", () => (
             <NumberWorkbench
               definition={defineBinding(42, source =>
                 source.convert(floatConverter)
@@ -221,9 +232,9 @@ export class Demo extends React.Component {
           <pt.Tab
             id="dependencies"
             children="dependencies"
-            panel={<DependencyDemo context={context} />}
+            panel={<DependencyDemo />}
           />
-          {this.makeTab("fix", ctx => (
+          {this.makeTab("fix", () => (
             <StringWorkbench
               definition={defineBinding("", source =>
                 source.fix(s => s.toUpperCase())
@@ -278,7 +289,7 @@ export class Demo extends React.Component {
               />
             }
           /> */}
-          {this.makeTab("complex", ctx => (
+          {this.makeTab("complex", () => (
             <StringWorkbench
               definition={defineBinding("x", source =>
                 source
@@ -299,7 +310,7 @@ export class Demo extends React.Component {
   .validateInitially()`}
             />
           ))}
-          {this.makeTab("overloads", ctx => (
+          {this.makeTab("overloads", () => (
             <StringWorkbench
               definition={defineBinding("shouldnot1", source =>
                 source
@@ -340,57 +351,51 @@ export class Demo extends React.Component {
               }
             />
           ))}
-          {this.makeTab("input group", ctx => <InputGroupDemo context={ctx} />)}
+          {this.makeTab("input group", () => <InputGroupDemo />)}
         </pt.Tabs>
       </div>
     )
   }
 
-  makeTab(name: string, panel: (ctx: BindingContext) => JSX.Element) {
-    const nestedContext = new BindingContext({
-      parent: context,
-      onSeek: () => {
-        this.selectedTabId = name
-      }
-    })
+  makeTab(name: string, panel: () => JSX.Element) {
+    // const nestedContext = new BindingContext({
+    //   parent: context,
+    //   onSeek: () => {
+    //     this.selectedTabId = name
+    //   }
+    // })
 
-    const renderLevelWarning = () => {
-      const level = nestedContext.maxErrorLevel
+    // const renderLevelWarning = () => {
+    //   const level = nestedContext.maxErrorLevel
 
-      const style = { margin: 6 }
+    //   const style = { margin: 6 }
 
-      switch (level) {
-        case BindingErrorLevel.Error:
-          return (
-            <pt.Icon
-              style={style}
-              icon={IconNames.WARNING_SIGN}
-              intent={pt.Intent.DANGER}
-            />
-          )
-        case BindingErrorLevel.Warning:
-          return (
-            <pt.Icon
-              style={style}
-              icon={IconNames.WARNING_SIGN}
-              intent={pt.Intent.WARNING}
-            />
-          )
-        default:
-          return false
-      }
-    }
+    //   switch (level) {
+    //     case BindingErrorLevel.Error:
+    //       return (
+    //         <pt.Icon
+    //           style={style}
+    //           icon={IconNames.WARNING_SIGN}
+    //           intent={pt.Intent.DANGER}
+    //         />
+    //       )
+    //     case BindingErrorLevel.Warning:
+    //       return (
+    //         <pt.Icon
+    //           style={style}
+    //           icon={IconNames.WARNING_SIGN}
+    //           intent={pt.Intent.WARNING}
+    //         />
+    //       )
+    //     default:
+    //       return false
+    //   }
+    // }
 
-    const rendering = (
-      <Rendering
-        render={() => (
-          <span>
-            {name} {renderLevelWarning()}
-          </span>
-        )}
-      />
-    )
+    const rendering = <Rendering render={() => <span>{name}</span>} />
 
-    return <pt.Tab id={name} title={rendering} panel={panel(nestedContext)} />
+    // {renderLevelWarning()}
+
+    return <pt.Tab id={name} title={rendering} panel={panel()} />
   }
 }

@@ -16,6 +16,7 @@ export {
 } from "./brazen-bindings/bindings"
 
 export {
+  reactBindingContext,
   BoundComponent,
   BoundComponentProps,
   BoundInput
