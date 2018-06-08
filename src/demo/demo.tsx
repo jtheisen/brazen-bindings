@@ -8,8 +8,9 @@ import { observable } from "mobx"
 import { observer } from "mobx-react"
 import { defineBinding, Workbench } from "./demo-components"
 import { DependencyDemo } from "./dependency-demo"
-import * as pt from "@blueprintjs/core"
 import { makeValidator } from "../brazen-bindings/validators"
+import * as pt from "@blueprintjs/core"
+import { IconNames } from "@blueprintjs/icons"
 
 const context = new BindingContext()
 
@@ -20,29 +21,30 @@ function nonEmpty(value: string) {
   return value.trim() ? undefined : "value should not be empty"
 }
 
-// function delay(millis: number) {
-//   return new Promise<void>((resolve, reject) => setTimeout(resolve, millis))
-// }
-
-// async function notFooAsync(value: string): Promise<string | undefined> {
-//   console.info("notFooAsync fake request")
-//   await delay(1000)
-//   return value.trim() !== "foo" ? undefined : "foo already taken"
-// }
-
 @observer
 class ValidationDisplay extends React.Component<{ context: BindingContext }> {
   render() {
-    const isValid = this.props.context.isValid
-    return isValid ? (
-      <div className="pt-callout pt-intent-success pt-icon-tick">
-        All is well.
-      </div>
-    ) : (
-      <div className="pt-callout pt-intent-warning pt-icon-warning-sign">
-        There are some issues.
-      </div>
-    )
+    const level = this.props.context.maxErrorLevel
+    switch (level) {
+      case BindingErrorLevel.Error:
+        return (
+          <pt.Callout intent={pt.Intent.DANGER} icon={IconNames.WARNING_SIGN}>
+            There are some serious issues.
+          </pt.Callout>
+        )
+      case BindingErrorLevel.Warning:
+        return (
+          <pt.Callout intent={pt.Intent.WARNING} icon={IconNames.WARNING_SIGN}>
+            There are some warnings.
+          </pt.Callout>
+        )
+      default:
+        return (
+          <pt.Callout intent={pt.Intent.SUCCESS} icon={IconNames.TICK}>
+            All is well.
+          </pt.Callout>
+        )
+    }
   }
 }
 

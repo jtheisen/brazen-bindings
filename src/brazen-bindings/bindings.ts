@@ -455,18 +455,20 @@ export class BindingBuilder<T> extends BindingProvider<T> {
             this.binding,
             makeValidator(secondArgument, thirdArgument as (
               value: T
-            ) => boolean)
+            ) => boolean),
+            firstArgument
           )
         )
       } else if (secondArgument instanceof Validator) {
         return new BindingBuilder(
-          new ValidationBinding(this.binding, secondArgument)
+          new ValidationBinding(this.binding, secondArgument, firstArgument)
         )
       } else {
         return new BindingBuilder(
           new ValidationBinding(
             this.binding,
-            makeValidator(secondArgument as ((value: T) => ValidationResult))
+            makeValidator(secondArgument as ((value: T) => ValidationResult)),
+            firstArgument
           )
         )
       }
