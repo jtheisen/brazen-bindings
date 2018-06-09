@@ -34,6 +34,11 @@ export class InnerBindingContextScope extends React.Component<
     this.props.innerContext.undeclareParent(this.props.parentContext)
   }
 
+  componentWillReceiveProps(props: InnerBindingContextProviderProps) {
+    this.props.innerContext.undeclareParent(this.props.parentContext)
+    props.innerContext.declareParent(props.parentContext)
+  }
+
   render() {
     return (
       <reactBindingContext.Provider
@@ -47,13 +52,6 @@ export class InnerBindingContextScope extends React.Component<
 export class BindingContextScope extends React.Component<
   BindingContextProviderProps
 > {
-  context: BindingContext
-
-  constructor(props: BindingContextProviderProps) {
-    super(props)
-    this.context = props.context || new BindingContext()
-  }
-
   render() {
     return (
       <reactBindingContext.Consumer
@@ -90,9 +88,12 @@ export class BoundComponent2<T> extends React.Component<
 
   componentWillReceiveProps(props: Readonly<BoundComponent2Props<T>>) {
     const binding = props.binding
-    if (this.props.binding !== binding) {
+    if (
+      this.props.binding !== binding ||
+      this.props.context !== props.context
+    ) {
       this.props.context.unregister(this.props.binding)
-      this.props.context.register(binding)
+      props.context.register(binding)
     }
   }
 
