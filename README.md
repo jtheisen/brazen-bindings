@@ -2,34 +2,37 @@
 
 ## Teaser
 
-This is a [code sandbox](https://codesandbox.io/s/github/jtheisen/brazen-bindings) (*not* a production-ready library) containing my attempt at a framework for type-safe two-way binding and validation in [React](https://reactjs.org/) with [MobX](https://github.com/mobxjs/mobx). For a demo, click on the sandbox link.
+This is a [code sandbox](https://codesandbox.io/s/github/jtheisen/brazen-bindings) (_not_ a production-ready library) containing my attempt at a framework for type-safe two-way binding and validation in [React](https://reactjs.org/) with [MobX](https://github.com/mobxjs/mobx). For a demo, click on the sandbox link.
 
 With this, you can write a component `<MyInput />` that can be bound against MobX observerbale models within a render function like this:
 
 ```tsx
-<MyInput binding={context.bind(model, "somePropertyOfModel")} />
+<MyInput binding={bind(model, "somePropertyOfModel")} />
 ```
 
 The bindings can be composed in a variety of ways, eg.:
 
 ```tsx
-<MyInput binding={context.bind(model, "somePropertyOfModel")
-  .bar() // stop propagation of invalid values to the source, and
-  .validate(noEmptyStrings)   // validate for required input,
-  .defer()                    // but show error only on focus loss,
-  .validate(specialValidator) // except for this special validation
-  .validateInitially()        // which will also be validated right away.
-}/>
+<MyInput
+  binding={
+    bind(model, "somePropertyOfModel")
+      .bar() // stop propagation of invalid values to the source, and
+      .validate(noEmptyStrings) // validate for required input,
+      .defer() // but show error only on focus loss,
+      .validate(specialValidator) // except for this special validation
+      .validateInitially() // which will also be validated right away.
+  }
+/>
 ```
 
 The bindings are a pipeline consisting of primitives with very limited responsibility each.
 
 ## Rationale
 
-* The binding and validation libraries I've seen so far are not type safe. While I don't think that type safety should be enforced fantaically everywhere, binding form controls to a business model really should be. The names in your own models are the names that get renamed (and otherwise refactored) much more often that names from third-party libraries you use. `JSON.stringify` isn't going to change, `myMispelledProperty` will.
-* I sometimes want validation to happen on typing and sometimes on focus loss. I sometimes need my invalid input in the model and sometimes I can't have it there. I sometimes want the original value to be validated also and sometimes I don't.
-* I want all of that to be consice and comprehensible at a glance.
-* I want all that logic to be correct and it won't be when I have to implement it over and over everytime I need it. I'm too bad when bored.
+- The binding and validation libraries I've seen so far are not type safe. While I don't think that type safety should be enforced fantaically everywhere, binding form controls to a business model really should be. The names in your own models are the names that get renamed (and otherwise refactored) much more often that names from third-party libraries you use. `JSON.stringify` isn't going to change, `myMispelledProperty` will.
+- I sometimes want validation to happen on typing and sometimes on focus loss. I sometimes need my invalid input in the model and sometimes I can't have it there. I sometimes want the original value to be validated also and sometimes I don't.
+- I want all of that to be consice and comprehensible at a glance.
+- I want all that logic to be correct and it won't be when I have to implement it over and over everytime I need it. I'm too bad when bored.
 
 I don't think something like that exists yet, so here is my attempt.
 
@@ -84,8 +87,7 @@ This is usally quite easy to achieve. Although the following render function pri
 ```tsx
   render() {
     return <div>
-      <MyInput binding={context
-        .bind(this.model, "value")
+      <MyInput binding={bind(this.model, "value")
         ...
       }>
       <Indirection render={() => this.model.value />
@@ -96,39 +98,17 @@ This is usally quite easy to achieve. Although the following render function pri
 The `Indirection` component has this trivial definition:
 
 ```tsx
-  @observer
-  class Indirection extends React.Component<{
-    render: () => JSX.Element | null | false
-  }> {
-    render() {
-      return this.props.render()
-    }
+@observer
+class Indirection extends React.Component<{
+  render: () => JSX.Element | null | false
+}> {
+  render() {
+    return this.props.render()
   }
+}
 ```
 
 That way, it's only the `Indirection` component that gets re-rendered and a change in the value doesn't cause a binding state loss.
-
-### Binding contexts
-
-Besides presenting validation problems to the user, it's usually necessary to prevent actions such as saving the model in the presence of such errors. 
-
-That's what the `context` thing in the sample above is for: The context knows whether there are any validation errors pending from any binding created from it.
-
-(Another related and minor other feature it enables is the ability to externally trigger validation of those bindings that are invalid but have neither yet been edited by the user nor had been validated initially with `validateInitially()` - that is usually done when the user triggers a save of the model; but it is certainly not always necessary).
-
-With contexts, there is a catch though: In the last section I talked about how re-rendering a component can cause the binding to be recreated, resulting in the loss of the binding state. While this is often undesirable, it's also sometimes inevitable:
-
-What if the model property in the sample of the last section itself changes, for instance because the thing was re-fetched from a server and replaced as a whole, rather than merely its properties? Then a state loss is acceptable, we *do* want the bindings to be recreated, but *don't* want the old, discarded bindings that are in a potentially invalid state to be counted by their binding context.
-
-To achieve that, the bindings have a notion of being *open*. Only open bindings are counted by the context, and they are held open by a helper component if and only if that component is mounted:
-
-```tsx
-  <BoundComponent binding={binding} />
-```
-
-That component can be put into a `<MyInput />`'s render function (or have `MyInput` derive from it) and will then ensure that exactly those bindings are open that should be.
-
-However, that also means that all parts of a form that should be validated together must be actually mounted - something that may not necessarily be the case. In this sample, there's a checkbox that determines if hidden tabs are mounted or not, and you can observe how that determines wheter the validation message on the top counts the samples in all tabs or just the one in the active one.
 
 ### Input components
 
@@ -142,7 +122,7 @@ In practice, not only will there be no input components satisfying everyone, the
 
 So usually one will write different such components whenever they are each needed sufficiently often. Frequently though, one will still use `<input />`s directly - but even then you can still use bindings, you just have to reference each more than once.
 
-There is, however, one core component that *can* be reused, if only to implement the others more neatly:
+There is, however, one core component that _can_ be reused, if only to implement the others more neatly:
 
 ```tsx
 type InputProps = React.DetailedHTMLProps<
@@ -150,26 +130,42 @@ type InputProps = React.DetailedHTMLProps<
   HTMLInputElement
 >
 
-export class BoundInput extends BoundComponent<string, InputProps> {
+export class BoundInput extends React.Component<
+  InputProps & { binding: IBindingProvider<string> }
+> {
   render() {
     const { binding, ...rest } = this.props
+    const innerBinding = binding.getBinding()
     return (
-      <input
-        {...rest}
-        value={binding.peek().value}
-        onChange={e => binding.push({ value: e.currentTarget.value })}
-        onFocus={() => binding.onFocus()}
-        onBlur={() => binding.onBlur()}
+      <BoundComponent
+        binding={binding}
+        render={() => (
+          <input
+            {...rest}
+            value={innerBinding.peek().value}
+            onChange={e => innerBinding.push({ value: e.currentTarget.value })}
+            onFocus={() => innerBinding.onFocus()}
+            onBlur={() => innerBinding.onBlur()}
+          />
+        )}
       />
     )
   }
 }
 ```
 
-### Things not yet considered
+The `BoundComponent` helper is relevant for context support and explained in the next chapter.
 
-There are some things that are not difficult to do but not yet part of this sandbox:
+### Binding contexts
 
-* Async validation & awaiting async validation externally is something we surely need,
-* binding contexts may require nesting to better support tabbed forms and
-* binding contexts may need to have more information from the bindings to allow for some validation errors to prevent some actions and not others.
+Besides presenting validation problems to the user, it's usually necessary to prevent actions such as saving the model in the presence of such errors. Since we want to create the bindings on-the-fly in render methods, we don't want to also maintain a collection with all of them in it.
+
+That's where the binding context comes in. The binding context is based on React 16 contexts and collects all bindings that are installed in it, either directly, or more easily by using the `BoundComponent` helper.
+
+(Another related and minor other feature it enables is the ability to externally trigger validation of those bindings that are invalid but have neither yet been edited by the user nor had been validated initially with `validateInitially()` - that is usually done when the user triggers a save of the model; but it is certainly not always necessary).
+
+On mounting, the `BoundComponent` in the `BoundInput` above installs the given binding in the ambient context.
+
+That component can be put into a `<MyInput />`'s render function and will then ensure that exactly those bindings are installed that should be.
+
+However, that also means that all parts of a form that should be validated together must be actually mounted - something that may not necessarily be the case. In this sample, there's a checkbox that determines if hidden tabs are mounted or not, and you can observe how that determines wheter the validation message on the top counts the samples in all tabs or just the one in the active one.
