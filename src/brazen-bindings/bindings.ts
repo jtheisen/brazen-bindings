@@ -16,15 +16,35 @@ export interface BindingContextOptions {
 }
 
 export class BindingContext {
-  @observable private bindings: IBinding[] = []
+  @observable private parent?: BindingContext
+  @observable private children: BindingContext[] = []
 
-  constructor(private options?: BindingContextOptions) {}
+  @observable private ownBindings: IBinding[] = []
+
+  @computed
+  get allBindings(): { context: BindingContext; binding: IBinding }[] {
+    const allChildBindings = this.children
+      .map(c => c.allBindings)
+      .reduce((aggregate, bindings) => {
+        aggregate.push(...bindings)
+        return aggregate
+      }, [])
+
+    const self: BindingContext = this
+
+    const ownBindings = this.ownBindings.map(b => ({
+      context: self,
+      binding: b
+    }))
+
+    return ownBindings.concat(allChildBindings)
+  }
 
   @computed
   get maxErrorLevel() {
-    return this.bindings
+    return this.allBindings
       .map(b => {
-        const error = b.peek().error
+        const error = b.binding.peek().error
         return error ? error.level : BindingErrorLevel.None
       })
       .reduce((p, c) => Math.max(p, c), BindingErrorLevel.None)
@@ -32,8 +52,8 @@ export class BindingContext {
 
   get maxErrorLevelBindings() {
     const level = this.maxErrorLevel
-    return this.bindings.filter(b => {
-      const error = b.peek().error
+    return this.allBindings.filter(b => {
+      const error = b.binding.peek().error
       return error && error.level === level
     })
   }
@@ -45,14 +65,14 @@ export class BindingContext {
 
   async validateAll() {
     // This causes all validations to trigger.
-    for (const binding of this.bindings) {
+    for (const binding of this.ownBindings) {
       binding.push(binding.peek())
       binding.onBlur()
     }
 
     // isValid would be already correct here
     // unless there's async validation also.
-    const promises = this.bindings
+    const promises = this.ownBindings
       .map(v => v.peek().error)
       .map(e => e && e.promise)
     await Promise.all(promises)
@@ -71,33 +91,40 @@ export class BindingContext {
   }
 
   onSeek(): boolean {
-    if (this.options && this.options.onSeek && this.options.onSeek()) {
-      return true
-    } else if (this.options && this.options.parent) {
-      return this.options.parent.onSeek()
-    } else {
-      return false
-    }
+    return true
+    // if (this.options && this.options.onSeek && this.options.onSeek()) {
+    //   return true
+    // } else if (this.options && this.options.parent) {
+    //   return this.options.parent.onSeek()
+    // } else {
+    //   return false
+    // }
   }
 
   register(binding: IBinding) {
-    binding.context = this
-    const i = this.bindings.indexOf(binding)
+    const i = this.ownBindings.indexOf(binding)
     if (i >= 0) throw Error("Binding already in context.")
-    this.bindings.push(binding)
-    if (this.options && this.options.parent) {
-      this.options.parent.register(binding)
-    }
+    this.ownBindings.push(binding)
   }
 
   unregister(binding: IBinding) {
-    if (this.options && this.options.parent) {
-      this.options.parent.unregister(binding)
-    }
-    const i = this.bindings.indexOf(binding)
+    const i = this.ownBindings.indexOf(binding)
     if (i < 0) throw Error("No such binding in context.")
-    this.bindings.splice(i, 1)
-    binding.context = undefined
+    this.ownBindings.splice(i, 1)
+  }
+
+  declareParent(context: BindingContext) {
+    if (this.parent) throw Error("Context already has a parent.")
+    this.parent = context
+    this.parent.children.push(this)
+  }
+
+  undeclareParent(context: BindingContext) {
+    if (this.parent !== context)
+      throw Error("Can't undeclare the wrong parent.")
+    const i = this.parent.children.indexOf(this)
+    this.parent.children.splice(i, 1)
+    this.parent = undefined
   }
 }
 

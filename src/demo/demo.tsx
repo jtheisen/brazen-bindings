@@ -1,3 +1,4 @@
+import { BindingContextScope } from "../brazen-bindings/bound-input"
 import {
   BindingContext,
   floatConverter,
@@ -358,44 +359,57 @@ export class Demo extends React.Component {
   }
 
   makeTab(name: string, panel: () => JSX.Element) {
-    // const nestedContext = new BindingContext({
-    //   parent: context,
-    //   onSeek: () => {
-    //     this.selectedTabId = name
-    //   }
-    // })
+    const nestedContext = new BindingContext()
 
-    // const renderLevelWarning = () => {
-    //   const level = nestedContext.maxErrorLevel
+    const renderLevelWarning = () => {
+      const level = nestedContext.maxErrorLevel
 
-    //   const style = { margin: 6 }
+      const style = { margin: 6 }
 
-    //   switch (level) {
-    //     case BindingErrorLevel.Error:
-    //       return (
-    //         <pt.Icon
-    //           style={style}
-    //           icon={IconNames.WARNING_SIGN}
-    //           intent={pt.Intent.DANGER}
-    //         />
-    //       )
-    //     case BindingErrorLevel.Warning:
-    //       return (
-    //         <pt.Icon
-    //           style={style}
-    //           icon={IconNames.WARNING_SIGN}
-    //           intent={pt.Intent.WARNING}
-    //         />
-    //       )
-    //     default:
-    //       return false
-    //   }
-    // }
+      switch (level) {
+        case BindingErrorLevel.Error:
+          return (
+            <pt.Icon
+              style={style}
+              icon={IconNames.WARNING_SIGN}
+              intent={pt.Intent.DANGER}
+            />
+          )
+        case BindingErrorLevel.Warning:
+          return (
+            <pt.Icon
+              style={style}
+              icon={IconNames.WARNING_SIGN}
+              intent={pt.Intent.WARNING}
+            />
+          )
+        default:
+          return false
+      }
+    }
 
-    const rendering = <Rendering render={() => <span>{name}</span>} />
+    const rendering = (
+      <Rendering
+        render={() => (
+          <span>
+            {name} {renderLevelWarning()}
+          </span>
+        )}
+      />
+    )
 
-    // {renderLevelWarning()}
-
-    return <pt.Tab id={name} title={rendering} panel={panel()} />
+    return (
+      <pt.Tab
+        id={name}
+        title={rendering}
+        panel={
+          <BindingContextScope
+            context={nestedContext}
+            onSeek={() => (this.selectedTabId = name)}
+            children={panel()}
+          />
+        }
+      />
+    )
   }
 }

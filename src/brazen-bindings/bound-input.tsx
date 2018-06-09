@@ -13,14 +13,57 @@ export const reactBindingContext = React.createContext<BindingContext>(
   globalBindingContext
 )
 
-export class BindingContextProvider extends React.Component {
-  context = new BindingContext()
+interface BindingContextProviderProps {
+  context: BindingContext
+  onSeek?: () => any
+}
+
+interface InnerBindingContextProviderProps {
+  parentContext: BindingContext
+  innerContext: BindingContext
+}
+
+export class InnerBindingContextScope extends React.Component<
+  InnerBindingContextProviderProps
+> {
+  componentDidMount() {
+    this.props.innerContext.declareParent(this.props.parentContext)
+  }
+
+  componentWillUnmount() {
+    this.props.innerContext.undeclareParent(this.props.parentContext)
+  }
 
   render() {
     return (
       <reactBindingContext.Provider
-        value={this.context}
+        value={this.props.innerContext}
         children={this.props.children}
+      />
+    )
+  }
+}
+
+export class BindingContextScope extends React.Component<
+  BindingContextProviderProps
+> {
+  context: BindingContext
+
+  constructor(props: BindingContextProviderProps) {
+    super(props)
+    this.context = props.context || new BindingContext()
+  }
+
+  render() {
+    return (
+      <reactBindingContext.Consumer
+        children={ctx => (
+          <InnerBindingContextScope
+            parentContext={ctx}
+            innerContext={this.props.context}
+            children={this.props.children}
+          />
+        )}
       />
     )
   }
