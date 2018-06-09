@@ -10,9 +10,20 @@ import { observable, reaction, computed } from "mobx"
 import { Converter, ConversionResult } from "./conversions"
 import { makeValidator } from "./validators"
 
+class SeekEvent {
+  private handled = false
+
+  get unhandled() {
+    return this.handled
+  }
+
+  stopPropagation() {
+    this.handled = true
+  }
+}
+
 export interface BindingContextOptions {
-  parent?: BindingContext
-  onSeek?: () => any
+  onSeek?: (event: SeekEvent) => any
 }
 
 export class BindingContext {
@@ -20,6 +31,8 @@ export class BindingContext {
   @observable private children: BindingContext[] = []
 
   @observable private ownBindings: IBinding[] = []
+
+  constructor(private options?: BindingContextOptions) {}
 
   @computed
   get allBindings(): { context: BindingContext; binding: IBinding }[] {
@@ -83,22 +96,23 @@ export class BindingContext {
 
     const nestedContext = binding && binding.context
 
+    const event = new SeekEvent()
+
     if (nestedContext && nestedContext.maxErrorLevel > BindingErrorLevel.None) {
-      return nestedContext.onSeek()
+      return nestedContext.onSeek(event)
     } else {
       return false
     }
   }
 
-  onSeek(): boolean {
-    return true
-    // if (this.options && this.options.onSeek && this.options.onSeek()) {
-    //   return true
-    // } else if (this.options && this.options.parent) {
-    //   return this.options.parent.onSeek()
-    // } else {
-    //   return false
-    // }
+  onSeek(event: SeekEvent): void {
+    if (this.options && this.options.onSeek) {
+      this.options.onSeek(event)
+    }
+
+    if (event.unhandled && this.parent) {
+      return this.parent.onSeek(event)
+    }
   }
 
   register(binding: IBinding) {

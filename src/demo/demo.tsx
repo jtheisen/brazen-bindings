@@ -359,7 +359,9 @@ export class Demo extends React.Component {
   }
 
   makeTab(name: string, panel: () => JSX.Element) {
-    const nestedContext = new BindingContext()
+    const nestedContext = new BindingContext({
+      onSeek: () => (this.selectedTabId = name)
+    })
 
     const renderLevelWarning = () => {
       const level = nestedContext.maxErrorLevel
