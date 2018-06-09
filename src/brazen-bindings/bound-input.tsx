@@ -9,9 +9,12 @@ import {
 
 const globalBindingContext = new BindingContext()
 
-export const reactBindingContext = React.createContext<BindingContext>(
+const reactBindingContext = React.createContext<BindingContext>(
   globalBindingContext
 )
+
+export const BindingContextProvider = reactBindingContext.Provider
+export const BindingContextConsumer = reactBindingContext.Consumer
 
 interface BindingContextProviderProps {
   context: BindingContext

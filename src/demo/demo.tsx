@@ -1,16 +1,16 @@
-import { BindingContextScope } from "../brazen-bindings/bound-input"
 import {
   BindingContext,
-  floatConverter,
+  BindingContextConsumer,
+  BindingContextScope,
   BindingErrorLevel,
-  reactBindingContext
+  makeValidator,
+  floatConverter
 } from "../brazen-bindings"
 import * as React from "react"
 import { observable } from "mobx"
 import { observer } from "mobx-react"
 import { defineBinding, Rendering, Workbench } from "./demo-components"
 import { DependencyDemo } from "./dependency-demo"
-import { makeValidator } from "../brazen-bindings/validators"
 import * as pt from "@blueprintjs/core"
 import { IconNames } from "@blueprintjs/icons"
 import { InputGroupDemo } from "./input-group-demo"
@@ -69,7 +69,7 @@ export class Demo extends React.Component {
   public render() {
     return (
       <div style={{ marginTop: 20 }}>
-        <reactBindingContext.Consumer
+        <BindingContextConsumer
           children={context => (
             <>
               <ValidationDisplay

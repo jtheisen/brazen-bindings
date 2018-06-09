@@ -16,10 +16,13 @@ export {
 } from "./brazen-bindings/bindings"
 
 export {
-  reactBindingContext,
+  BindingContextScope,
+  BindingContextConsumer,
   BoundComponent,
   BoundComponentProps,
   BoundInput
 } from "./brazen-bindings/bound-input"
 
 export { floatConverter } from "./brazen-bindings/conversions"
+
+export { makeValidator } from "./brazen-bindings/validators"
