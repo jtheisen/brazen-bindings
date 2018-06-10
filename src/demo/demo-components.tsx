@@ -10,7 +10,7 @@ import {
   BoundComponent
 } from "../brazen-bindings"
 import * as pt from "@blueprintjs/core"
-import { Binder, IBindingProvider } from "../brazen-bindings/bindings"
+import { Binder, IBindingAccessor } from "../brazen-bindings/bindings"
 
 @observer
 export class Rendering extends React.Component<{
@@ -23,7 +23,7 @@ export class Rendering extends React.Component<{
 
 interface IBoundInputProps<T> {
   label?: string
-  binding: IBindingProvider<T>
+  binding: IBindingAccessor<T>
   reset?: () => void
 }
 
@@ -236,7 +236,7 @@ class InputGroupWithMessage extends React.Component<
 }
 
 type BoundInputGroupProps = pt.IInputGroupProps &
-  HTMLInputProps & { binding: IBindingProvider<string> }
+  HTMLInputProps & { binding: IBindingAccessor<string> }
 
 @observer
 export class BoundInputGroup extends React.Component<BoundInputGroupProps> {

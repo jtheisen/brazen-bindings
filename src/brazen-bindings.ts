@@ -2,18 +2,14 @@ export {
   BindingValue,
   BindingError,
   BindingErrorLevel,
-  MessageType,
   Validator,
-  ValidationResult
+  ValidationResult,
+  ValidationMessage
 } from "./brazen-bindings/fundamentals"
 
-export {
-  bind,
-  Binding,
-  BindingBuilder,
-  BindingContext,
-  BindingProvider
-} from "./brazen-bindings/bindings"
+export { bind, Binding, BindingBuilder } from "./brazen-bindings/bindings"
+
+export { BindingContext } from "./brazen-bindings/context"
 
 export {
   BindingContextScope,

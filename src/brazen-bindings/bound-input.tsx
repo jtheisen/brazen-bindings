@@ -1,11 +1,6 @@
 import * as React from "react"
-import {
-  Binding,
-  BindingContext,
-  BindingProvider,
-  getBinding,
-  IBindingProvider
-} from "./bindings"
+import { BindingContext } from "./context"
+import { Binding, IBindingAccessor } from "./bindings"
 
 const globalBindingContext = new BindingContext()
 
@@ -13,7 +8,7 @@ const reactBindingContext = React.createContext<BindingContext>(
   globalBindingContext
 )
 
-export const BindingContextProvider = reactBindingContext.Provider
+const BindingContextProvider = reactBindingContext.Provider
 export const BindingContextConsumer = reactBindingContext.Consumer
 
 interface BindingContextProviderProps {
@@ -26,7 +21,7 @@ interface InnerBindingContextProviderProps {
   innerContext: BindingContext
 }
 
-export class InnerBindingContextScope extends React.Component<
+class InnerBindingContextScope extends React.Component<
   InnerBindingContextProviderProps
 > {
   componentDidMount() {
@@ -44,7 +39,7 @@ export class InnerBindingContextScope extends React.Component<
 
   render() {
     return (
-      <reactBindingContext.Provider
+      <BindingContextProvider
         value={this.props.innerContext}
         children={this.props.children}
       />
@@ -57,7 +52,7 @@ export class BindingContextScope extends React.Component<
 > {
   render() {
     return (
-      <reactBindingContext.Consumer
+      <BindingContextConsumer
         children={ctx => (
           <InnerBindingContextScope
             parentContext={ctx}
@@ -78,13 +73,11 @@ export type BoundComponent2Props<T> = {
 
 export type BoundComponentProps<T> = {
   context?: BindingContext
-  binding: BindingProvider<T>
+  binding: IBindingAccessor<T>
   render: () => JSX.Element | string | false | null
 }
 
-export class BoundComponent2<T> extends React.Component<
-  BoundComponent2Props<T>
-> {
+class InnerBoundComponent<T> extends React.Component<BoundComponent2Props<T>> {
   componentDidMount() {
     this.props.context.register(this.props.binding)
   }
@@ -110,24 +103,17 @@ export class BoundComponent2<T> extends React.Component<
 }
 
 export class BoundComponent<T> extends React.Component<BoundComponentProps<T>> {
-  binding: Binding<T>
-
-  constructor(props: BoundComponentProps<T>) {
-    super(props)
-    this.binding = getBinding(props.binding)
-  }
-
   render() {
     return (
-      <reactBindingContext.Consumer>
+      <BindingContextConsumer>
         {context => (
-          <BoundComponent2
+          <InnerBoundComponent
             context={context}
-            binding={this.binding}
+            binding={this.props.binding.getBinding()}
             render={this.props.render}
           />
         )}
-      </reactBindingContext.Consumer>
+      </BindingContextConsumer>
     )
   }
 }
@@ -138,7 +124,7 @@ type InputProps = React.DetailedHTMLProps<
 >
 
 export class BoundInput extends React.Component<
-  InputProps & { binding: IBindingProvider<string> }
+  InputProps & { binding: IBindingAccessor<string> }
 > {
   render() {
     const { binding, ...rest } = this.props

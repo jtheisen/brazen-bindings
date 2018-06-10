@@ -1,9 +1,9 @@
-export type MessageType = JSX.Element | string
+export type ValidationMessage = JSX.Element | string
 
-export type ValidationResult = MessageType | undefined
+export type ValidationResult = ValidationMessage | undefined
 
 export interface BindingError {
-  message: MessageType
+  message: ValidationMessage
   level: BindingErrorLevel
   promise?: Promise<any>
 }
