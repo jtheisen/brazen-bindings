@@ -116,7 +116,7 @@ This sample's `<MyInput />` contains the display of a potential validation error
 
 However, input components in general can be quite complex. [Blueprint](http://blueprintjs.com/), which is the css framework that this sample uses, knows the concept of form groups, input groups and control groups, all potentially relevant for the assembly of a sophisticated input component. And there are many css frameworks.
 
-Unfortunately, as soon as validation error message display is part of the component's responsibility, all that other complexity is dragged into it as well due to how css classes for errors have to be put on various elements.
+Unfortunately, as soon as validation error message display below the input field is part of the component's responsibility, all that other complexity is dragged into it as well due to how css classes for errors have to be put on various elements.
 
 In practice, not only will there be no input components satisfying everyone, there will not even be one that satisfies only me.
 
@@ -154,7 +154,7 @@ export class BoundInput extends React.Component<
 }
 ```
 
-The `BoundComponent` helper is relevant for context support and explained in the next chapter.
+The `BoundComponent`'s purpose brings us to binding contexts.
 
 ### Binding contexts
 
@@ -169,3 +169,5 @@ On mounting, the `BoundComponent` in the `BoundInput` above installs the given b
 That component can be put into a `<MyInput />`'s render function and will then ensure that exactly those bindings are installed that should be.
 
 However, that also means that all parts of a form that should be validated together must be actually mounted - something that may not necessarily be the case. In this sample, there's a checkbox that determines if hidden tabs are mounted or not, and you can observe how that determines wheter the validation message on the top counts the samples in all tabs or just the one in the active one.
+
+The bindings themselves don't know about the context and can also be used without being installed in them.
