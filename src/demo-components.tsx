@@ -1,5 +1,5 @@
 import * as React from "react"
-import { observable } from "mobx"
+import { decorate, observable } from "mobx"
 import { observer } from "mobx-react"
 import { MyInput } from "./bound-inputs"
 import { BindingBuilder, BindingContext } from "./bindings"
@@ -31,11 +31,10 @@ export class DependencyDemo extends React.Component<{
             label="Value 2"
             binding={this.props.context
               .bind(this, "value2")
-              .validate(
-                v =>
-                  v.length > this.value1.length
-                    ? "value 2 must not be longer than value 1"
-                    : undefined
+              .validate(v =>
+                v.length > this.value1.length
+                  ? "value 2 must not be longer than value 1"
+                  : undefined
               )}
           />
           <Indirection get={() => <div>{this.value2}</div>} />
@@ -74,7 +73,7 @@ export interface IWorkbenchProps<T> {
 
 @observer
 export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
-  @observable value: T
+  value: T
 
   get loggedValue() {
     console.info("accessing value in workbench")
@@ -135,11 +134,15 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
   }
 
   makeBinding() {
-    const result = this.props.definition
-      .makeBinding(this.props.context.bind(this, "loggedValue"))
+    const result = this.props.definition.makeBinding(
+      this.props.context.bind(this, "loggedValue")
+    )
     return result
   }
 }
+decorate(Workbench, {
+  value: observable
+})
 
 interface IBindingDefinitionWithDefault<T> {
   def: T

@@ -1,4 +1,10 @@
-import { observable, reaction, computed } from "mobx"
+import {
+  decorate,
+  observable,
+  reaction,
+  computed,
+  IObservableValue
+} from "mobx"
 import { Converter } from "./conversions"
 
 type ValidationResult = string | undefined
@@ -17,7 +23,7 @@ export interface IBinding {
 }
 
 export class BindingContext {
-  @observable private bindings: IBinding[] = []
+  private bindings: IBinding[] = observable.array()
 
   @computed
   get isValid() {
@@ -160,7 +166,7 @@ class FixBinding<T> extends NestedBinding<T> {
 }
 
 class BufferBinding<T> extends NestedBinding<T> {
-  @observable private buffer: BindingValue<T>
+  buffer: IObservableValue<BindingValue<T>>
 
   // Laziness is critical so that binding construction doesn't subscribe.
   hadInitialPeek = false
@@ -168,7 +174,10 @@ class BufferBinding<T> extends NestedBinding<T> {
   constructor(nested: Binding<T>) {
     super(nested)
 
-    this.buffer = { value: (undefined as any) as T }
+    this.buffer = observable.box(
+      { value: (undefined as any) as T },
+      { deep: false }
+    )
   }
 
   push(value: BindingValue<T>) {
@@ -179,13 +188,13 @@ class BufferBinding<T> extends NestedBinding<T> {
   peek() {
     if (!this.hadInitialPeek) {
       this.hadInitialPeek = true
-      this.buffer = super.peek()
+      this.buffer.set(super.peek())
     }
-    return this.buffer
+    return this.buffer.get()
   }
 
   protected update(value: BindingValue<T>) {
-    this.buffer = value
+    this.buffer.set(value)
   }
 }
 
@@ -235,7 +244,7 @@ class ValidationBinding<T> extends BufferBinding<T> {
 }
 
 class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
-  @observable private buffer: BindingValue<T>
+  buffer: IObservableValue<BindingValue<T>>
 
   // Laziness is critical so that binding construction doesn't subscribe.
   hadInitialPeek = false
@@ -243,13 +252,16 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
   constructor(nested: Binding<S>, private converter: Converter<T, S>) {
     super(nested)
 
-    this.buffer = { value: (undefined as any) as T }
+    this.buffer = observable.box(
+      { value: (undefined as any) as T },
+      { deep: false }
+    )
   }
 
   push(value: BindingValue<T>) {
     const result = this.converter.convert(value.value)
     const error = value.error || result.error
-    this.buffer = { value: value.value, error: error }
+    this.buffer.set({ value: value.value, error: error })
     if (!result.error)
       super.nestedPush({ value: result.value, error: result.error })
   }
@@ -259,14 +271,17 @@ class ConversionBinding<S, T> extends GeneralNestedBinding<S, T> {
       this.hadInitialPeek = true
       this.update(super.nestedPeek())
     }
-    return this.buffer
+    return this.buffer.get()
   }
 
   protected update(value: BindingValue<S>) {
     const newValue = this.converter.convertBack(value.value)
-    this.buffer = { value: newValue, error: value.error }
+    this.buffer.set({ value: newValue, error: value.error })
   }
 }
+decorate(BufferBinding, {
+  buffer: observable
+})
 
 class ThrottleBinding<T> extends NestedBinding<T> {
   currentKey = {}
