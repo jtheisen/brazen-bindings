@@ -81,7 +81,8 @@ export class Demo extends React.Component {
                   you may want to check out the{" "}
                   <a href="https://github.com/jtheisen/brazen-bindings/">
                     README on GitHub
-                  </a>.
+                  </a>
+                  .
                 </p>
               </div>
             }

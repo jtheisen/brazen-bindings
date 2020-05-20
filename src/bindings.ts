@@ -203,11 +203,6 @@ class DeferringBinding<T> extends BufferBinding<T> {
     this.update(value)
   }
 
-  onFocus() {
-    const value = this.peek()
-    this.update({ value: value.value })
-  }
-
   onBlur() {
     super.push(this.peek())
   }
@@ -236,7 +231,6 @@ class ValidationBinding<T> extends BufferBinding<T> {
     super.update(this.getValidated(value))
   }
 
-  // doesn't yet help us, is should factor our nestedPeek and update
   private getValidated(value: BindingValue<T>) {
     const error = this.validator(value.value)
     return { error: error || value.error, value: value.value }

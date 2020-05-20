@@ -76,7 +76,6 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
   value: T
 
   get loggedValue() {
-    console.info("accessing value in workbench")
     return this.value
   }
   set loggedValue(value: T) {
@@ -93,8 +92,6 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
   }
 
   render() {
-    console.info("workbench renders")
-
     const result = (
       <div className="workbench">
         <div>
@@ -127,8 +124,6 @@ export class Workbench<T> extends React.Component<IWorkbenchProps<T>> {
         </div>
       </div>
     )
-
-    console.info("workbench finished rendering")
 
     return result
   }
