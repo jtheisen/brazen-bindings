@@ -20,13 +20,9 @@ class ValidationDisplay extends React.Component<{ context: BindingContext }> {
   render() {
     const isValid = this.props.context.isValid
     return isValid ? (
-      <div className="pt-callout pt-intent-success pt-icon-tick">
-        All is well.
-      </div>
+      <pt.Callout intent={pt.Intent.SUCCESS}>All is well.</pt.Callout>
     ) : (
-      <div className="pt-callout pt-intent-warning pt-icon-warning-sign">
-        There are some issues.
-      </div>
+      <pt.Callout intent={pt.Intent.WARNING}>There are some issues.</pt.Callout>
     )
   }
 }
