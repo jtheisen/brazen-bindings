@@ -118,7 +118,7 @@ abstract class GeneralNestedBinding<S, T> extends Binding<T> {
   constructor(private nested: Binding<S>) {
     super(nested.context)
 
-    reaction(() => this.nestedPeek(), v => this.update(v))
+    reaction(() => this.nested.peek(), v => this.update(v))
   }
 
   nestedPush(value: BindingValue<S>) {
